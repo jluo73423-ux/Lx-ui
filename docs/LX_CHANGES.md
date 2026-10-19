@@ -93,10 +93,10 @@ change that limits damage regardless of the cause.
   kernel-TUN outbound, and `-test` catches it. `lx-ui.service` is therefore
   unchanged; `docs/systemd/90-lxui-relaxed.conf.example` is an opt-in escape
   hatch.
-- **Xray version policy (new).** `internal/xray/compat.go`: *recommended*
-  v26.10.10 (bundled; matches the go.mod xray-core module), *verified*
+- **Xray version policy (new).** `internal/xray/compat.go`: _recommended_
+  v26.10.10 (bundled; matches the go.mod xray-core module), _verified_
   v26.9.30 / v26.7.28 / v26.7.11 / v26.6.27 (pins upstream shipped since the
-  v26.6.27 minimum; not re-tested against this build), *experimental*
+  v26.6.27 minimum; not re-tested against this build), _experimental_
   everything else ≥ v26.6.27. The picker shows tiers (`/getXrayVersionTiers`),
   always offers recommended + verified (even when GitHub is unreachable) and
   lists/installs experimental versions only with `xrayAllowExperimental`
