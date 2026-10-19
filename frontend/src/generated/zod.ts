@@ -12,6 +12,9 @@ export type ProcessState = z.infer<typeof ProcessStateSchema>;
 export const ProtocolSchema = z.string();
 export type Protocol = z.infer<typeof ProtocolSchema>;
 
+export const RealityGateSchema = z.string();
+export type RealityGate = z.infer<typeof RealityGateSchema>;
+
 export const XrayVersionTierSchema = z.string();
 export type XrayVersionTier = z.infer<typeof XrayVersionTierSchema>;
 

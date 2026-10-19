@@ -214,6 +214,13 @@ func TestBuildXrayVersionInfos(t *testing.T) {
 	if got := strings.Join(tags, " "); got != want {
 		t.Fatalf("infos = %s\nwant    %s", got, want)
 	}
+	gates := map[string]xray.RealityGate{}
+	for _, i := range infos {
+		gates[i.Version] = i.RealityGate
+	}
+	if gates["v26.10.10"] != xray.RealityGateMLKEM || gates["v26.7.28"] != xray.RealityGateMinVer || gates["v26.6.27"] != xray.RealityGateNone {
+		t.Fatalf("reality gates = %v", gates)
+	}
 	infos = buildXrayVersionInfos(fetched, true)
 	if infos[0].Version != "v26.11.2" || infos[0].Tier != xray.XrayTierExperimental {
 		t.Fatalf("with opt-in the newest experimental release must lead: %+v", infos[0])

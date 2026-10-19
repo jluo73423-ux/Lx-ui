@@ -925,6 +925,9 @@ func (s *ServerService) GetXrayVersions() ([]string, error) {
 type XrayVersionInfo struct {
 	Version string               `json:"version"`
 	Tier    xray.XrayVersionTier `json:"tier"`
+	// RealityGate tells the picker which REALITY ClientHello gate the core
+	// enforces ("none", "minver", "mlkem"; see xray.RealityGateOf).
+	RealityGate xray.RealityGate `json:"realityGate"`
 }
 
 // GetXrayVersionInfos returns the installable Xray versions, newest first,
@@ -951,7 +954,7 @@ func buildXrayVersionInfos(fetched []string, allowExperimental bool) []XrayVersi
 			return
 		}
 		seen[tag] = struct{}{}
-		out = append(out, XrayVersionInfo{Version: tag, Tier: xray.TierOfXrayVersion(tag)})
+		out = append(out, XrayVersionInfo{Version: tag, Tier: xray.TierOfXrayVersion(tag), RealityGate: xray.RealityGateOf(tag)})
 	}
 	add(xray.RecommendedXrayVersion)
 	for _, v := range xray.VerifiedXrayVersions {

@@ -155,6 +155,14 @@
         "verified": "Verified",
         "experimental": "Experimental"
       },
+      "xrayRealityGate": {
+        "mlkem": "REALITY: chỉ ML-KEM",
+        "minver": "REALITY: client tối thiểu 26.3.27"
+      },
+      "xrayRealityGateTip": {
+        "mlkem": "Xray v26.9.8+ âm thầm từ chối client REALITY có TLS ClientHello không chứa khóa X25519MLKEM768 (Shadowrocket, sing-box, liên kết vless:// trong Mihomo, dấu vân tay ios/edge/random). Nút hiển thị trực tuyến nhưng không có lưu lượng. Hãy dùng client Xray-core mới với fp=chrome hoặc chọn lõi không có giới hạn này (vd. v26.6.27).",
+        "minver": "Xray v26.7.11–v26.9.7 coi Min Client Ver để trống là 26.3.27 và từ chối client REALITY báo phiên bản cũ hơn (Shadowrocket, Mihomo, sing-box). Với các lõi này, hãy đặt Min Client Ver rõ ràng (vd. 1.0)."
+      },
       "updatePanel": "Cập nhật Panel",
       "panelUpdateDesc": "Điều này sẽ cập nhật Lx-ui lên bản phát hành mới nhất và khởi động lại dịch vụ panel.",
       "currentPanelVersion": "Phiên bản panel hiện tại",

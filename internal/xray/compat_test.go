@@ -81,3 +81,23 @@ func TestRecommendedXrayVersionMatchesPins(t *testing.T) {
 		}
 	}
 }
+
+func TestRealityGateOf(t *testing.T) {
+	cases := map[string]RealityGate{
+		"v26.3.27":  RealityGateNone,
+		"v26.6.27":  RealityGateNone,
+		"v26.7.10":  RealityGateNone,
+		"v26.7.11":  RealityGateMinVer,
+		"26.7.28":   RealityGateMinVer,
+		"v26.9.7":   RealityGateMinVer,
+		"v26.9.8":   RealityGateMLKEM,
+		"v26.9.30":  RealityGateMLKEM,
+		"v26.10.10": RealityGateMLKEM,
+		"nightly":   RealityGateNone,
+	}
+	for tag, want := range cases {
+		if got := RealityGateOf(tag); got != want {
+			t.Errorf("RealityGateOf(%q) = %q, want %q", tag, got, want)
+		}
+	}
+}

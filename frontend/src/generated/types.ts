@@ -3,6 +3,7 @@ export type GeoKind = string;
 export type OnlineAPISupport = number;
 export type ProcessState = string;
 export type Protocol = string;
+export type RealityGate = string;
 export type XrayVersionTier = string;
 export type addrFamily = number;
 export type staticEgressResolver = string;

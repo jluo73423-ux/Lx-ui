@@ -155,6 +155,14 @@
         "verified": "Verified",
         "experimental": "Experimental"
       },
+      "xrayRealityGate": {
+        "mlkem": "REALITY: ML-KEM 必須",
+        "minver": "REALITY: 最小クライアント 26.3.27"
+      },
+      "xrayRealityGateTip": {
+        "mlkem": "Xray v26.9.8 以降は、TLS ClientHello に X25519MLKEM768 鍵共有を含まない REALITY クライアント（Shadowrocket、sing-box、Mihomo の vless:// 直接インポート、ios/edge/random 指紋など）を無通知で拒否します。ノードはオンライン表示でも通信できません。fp=chrome の最新 Xray-core クライアントを使うか、この制限のないコア（例: v26.6.27）を選んでください。",
+        "minver": "Xray v26.7.11〜v26.9.7 は空の最小クライアントバージョンを 26.3.27 とみなし、それより古いバージョンを報告する REALITY クライアント（Shadowrocket、Mihomo、sing-box）を拒否します。これらのコアでは最小クライアントバージョン（例: 1.0）を明示してください。"
+      },
       "updatePanel": "パネルを更新",
       "panelUpdateDesc": "これによりLx-uiが最新リリースに更新され、パネルサービスが再起動されます。",
       "currentPanelVersion": "現在のパネルバージョン",

@@ -155,6 +155,14 @@
         "verified": "Verified",
         "experimental": "Experimental"
       },
+      "xrayRealityGate": {
+        "mlkem": "REALITY: yalnızca ML-KEM",
+        "minver": "REALITY: min. istemci 26.3.27"
+      },
+      "xrayRealityGateTip": {
+        "mlkem": "Xray v26.9.8+, TLS ClientHello içinde X25519MLKEM768 anahtar paylaşımı olmayan REALITY istemcilerini sessizce reddeder (Shadowrocket, sing-box, Mihomo vless:// bağlantıları, ios/edge/random parmak izleri). Düğüm çevrimiçi görünür ama trafik geçmez. fp=chrome ile güncel bir Xray-core istemcisi kullanın veya bu kısıtlaması olmayan bir çekirdek seçin (ör. v26.6.27).",
+        "minver": "Xray v26.7.11–v26.9.7 boş Min Client Ver değerini 26.3.27 kabul eder ve daha eski sürüm bildiren REALITY istemcilerini reddeder (Shadowrocket, Mihomo, sing-box). Bu çekirdeklerde Min Client Ver değerini açıkça ayarlayın (ör. 1.0)."
+      },
       "updatePanel": "Paneli Güncelle",
       "panelUpdateDesc": "Bu işlem Lx-ui'yi en son sürüme güncelleyecek ve panel servisini yeniden başlatacaktır.",
       "currentPanelVersion": "Mevcut panel sürümü",

@@ -16,9 +16,13 @@ interface BusyEvent {
 
 type XrayVersionTier = 'recommended' | 'verified' | 'experimental';
 
+/** REALITY ClientHello gate enforced by the core (internal/xray/compat.go). */
+type RealityGate = 'none' | 'minver' | 'mlkem';
+
 interface XrayVersionInfo {
   version: string;
   tier: XrayVersionTier;
+  realityGate?: RealityGate;
 }
 
 const TIER_COLOR: Record<XrayVersionTier, string> = {
@@ -134,13 +138,20 @@ export default function VersionModal({ open, status, onClose, onBusy }: VersionM
                     showIcon
                   />
                   <div className="version-list">
-                    {versions.map(({ version, tier }) => (
+                    {versions.map(({ version, tier, realityGate }) => (
                       <div key={version} className="version-list-item">
                         <span>
                           <Tag color="purple">{version}</Tag>
                           <Tag color={TIER_COLOR[tier] ?? 'default'}>
                             {t(`pages.index.xrayTier.${tier}`)}
                           </Tag>
+                          {realityGate && realityGate !== 'none' && (
+                            <Tooltip title={t(`pages.index.xrayRealityGateTip.${realityGate}`)}>
+                              <Tag color={realityGate === 'mlkem' ? 'volcano' : 'gold'}>
+                                {t(`pages.index.xrayRealityGate.${realityGate}`)}
+                              </Tag>
+                            </Tooltip>
+                          )}
                         </span>
                         <Radio
                           checked={version === `v${status?.xray?.version}`}

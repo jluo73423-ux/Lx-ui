@@ -155,6 +155,14 @@
         "verified": "已驗證",
         "experimental": "實驗性"
       },
+      "xrayRealityGate": {
+        "mlkem": "REALITY：僅限 ML-KEM",
+        "minver": "REALITY：最低用戶端 26.3.27"
+      },
+      "xrayRealityGateTip": {
+        "mlkem": "Xray v26.9.8 以上會靜默拒絕 TLS ClientHello 未帶 X25519MLKEM768 金鑰交換的 REALITY 用戶端（Shadowrocket、sing-box、Mihomo 直接匯入的 vless:// 連結、ios/edge/random 等指紋）。節點顯示在線但沒有流量。請使用新版 Xray-core 用戶端並設 fp=chrome，或改用沒有此限制的核心（例如 v26.6.27）。",
+        "minver": "Xray v26.7.11–v26.9.7 會把留空的「最低用戶端版本」視為 26.3.27，拒絕回報較舊版本的 REALITY 用戶端（Shadowrocket、Mihomo、sing-box）。使用這些核心時，請在 REALITY 入站明確填寫最低用戶端版本（如 1.0）。"
+      },
       "updatePanel": "更新面板",
       "panelUpdateDesc": "這將把 Lx-ui 更新到最新版本並重新啟動面板服務。",
       "currentPanelVersion": "目前面板版本",

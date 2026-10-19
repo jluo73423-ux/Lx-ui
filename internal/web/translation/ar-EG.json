@@ -155,6 +155,14 @@
         "verified": "Verified",
         "experimental": "Experimental"
       },
+      "xrayRealityGate": {
+        "mlkem": "REALITY: ML-KEM فقط",
+        "minver": "REALITY: أدنى عميل 26.3.27"
+      },
+      "xrayRealityGateTip": {
+        "mlkem": "يرفض Xray 26.9.8 وما بعده بصمت عملاء REALITY الذين لا يتضمن TLS ClientHello لديهم مفتاح X25519MLKEM768 ‏(Shadowrocket وsing-box وروابط vless:// في Mihomo وبصمات ios/edge/random). تظهر العقدة متصلة لكن لا تمر أي حركة. استخدم عميل Xray-core حديثًا مع fp=chrome أو اختر نواة بلا هذا القيد (مثل v26.6.27).",
+        "minver": "تعتبر إصدارات Xray من 26.7.11 إلى 26.9.7 أن الحد الأدنى الفارغ لإصدار العميل هو 26.3.27 وترفض عملاء REALITY الأقدم (Shadowrocket وMihomo وsing-box). مع هذه النوى، حدّد الحد الأدنى لإصدار العميل صراحة (مثل 1.0)."
+      },
       "updatePanel": "تحديث البانل",
       "panelUpdateDesc": "ده هيحدث Lx-ui لآخر إصدار وهيعيد تشغيل خدمة البانل.",
       "currentPanelVersion": "إصدار البانل الحالي",

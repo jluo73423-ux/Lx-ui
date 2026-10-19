@@ -155,6 +155,14 @@
         "verified": "Verified",
         "experimental": "Experimental"
       },
+      "xrayRealityGate": {
+        "mlkem": "REALITY: только ML-KEM",
+        "minver": "REALITY: мин. клиент 26.3.27"
+      },
+      "xrayRealityGateTip": {
+        "mlkem": "Xray v26.9.8+ молча отклоняет REALITY-клиентов, у которых в TLS ClientHello нет ключа X25519MLKEM768 (Shadowrocket, sing-box, Mihomo с прямыми vless://-ссылками, отпечатки ios/edge/random). Узел выглядит онлайн, но трафика нет. Используйте актуальный клиент Xray-core с fp=chrome или ядро без этой проверки (например, v26.6.27).",
+        "minver": "Xray v26.7.11–v26.9.7 считают пустую минимальную версию клиента равной 26.3.27 и отклоняют REALITY-клиентов со старой версией (Shadowrocket, Mihomo, sing-box). На этих ядрах явно задайте минимальную версию клиента (например, 1.0) во входящих REALITY."
+      },
       "updatePanel": "Обновить панель",
       "panelUpdateDesc": "Это обновит Lx-ui до последнего релиза и перезапустит сервис панели.",
       "currentPanelVersion": "Текущая версия панели",

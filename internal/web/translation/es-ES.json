@@ -155,6 +155,14 @@
         "verified": "Verified",
         "experimental": "Experimental"
       },
+      "xrayRealityGate": {
+        "mlkem": "REALITY: solo ML-KEM",
+        "minver": "REALITY: cliente mín. 26.3.27"
+      },
+      "xrayRealityGateTip": {
+        "mlkem": "Xray v26.9.8+ rechaza en silencio a los clientes REALITY cuyo ClientHello TLS no incluye la clave X25519MLKEM768 (Shadowrocket, sing-box, enlaces vless:// en Mihomo, huellas ios/edge/random). El nodo aparece en línea pero no pasa tráfico. Use un cliente Xray-core actual con fp=chrome o un núcleo sin esta restricción (p. ej. v26.6.27).",
+        "minver": "Xray v26.7.11–v26.9.7 tratan un Min Client Ver vacío como 26.3.27 y rechazan clientes REALITY que reportan una versión anterior (Shadowrocket, Mihomo, sing-box). Con estos núcleos, defina Min Client Ver explícitamente (p. ej. 1.0)."
+      },
       "updatePanel": "Actualizar panel",
       "panelUpdateDesc": "Esto actualizará Lx-ui a la última versión y reiniciará el servicio del panel.",
       "currentPanelVersion": "Versión actual del panel",

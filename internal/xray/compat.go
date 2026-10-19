@@ -130,3 +130,47 @@ func XrayVersionAllowed(tag string, allowExperimental bool) bool {
 		return false
 	}
 }
+
+// RealityGate names the REALITY server-side ClientHello gate a core release
+// enforces. These gates silently divert a client to the REALITY target (the
+// TLS handshake "succeeds" against the real site, nothing is proxied and the
+// server logs nothing), which is why REALITY nodes can look online yet carry
+// no traffic for third-party clients. Verified against Xray-core sources and
+// with real handshakes (see docs/LX_CHANGES.md, "REALITY client gates").
+type RealityGate string
+
+const (
+	// RealityGateNone: no gate (cores before v26.7.11).
+	RealityGateNone RealityGate = "none"
+	// RealityGateMinVer: v26.7.11 .. v26.9.7 default an empty minClientVer to
+	// 26.3.27, rejecting clients that report an older version (Shadowrocket,
+	// Mihomo/Clash, sing-box ...). An explicit minClientVer overrides it.
+	RealityGateMinVer RealityGate = "minver"
+	// RealityGateMLKEM: v26.9.8 and later (github.com/xtls/reality 8cdf7bf9c7f0)
+	// reject every ClientHello without an X25519MLKEM768 key share listed before
+	// X25519. Not configurable. Shadowrocket, sing-box, Mihomo raw vless:// links
+	// and uTLS fingerprints such as ios/edge/qq/random are affected; current
+	// Xray-core clients with fp=chrome/firefox/safari are not.
+	RealityGateMLKEM RealityGate = "mlkem"
+)
+
+const (
+	realityMinVerSince = "v26.7.11"
+	realityMLKEMSince  = "v26.9.8"
+)
+
+// RealityGateOf returns the REALITY gate of a release tag ("none" for
+// unparseable tags).
+func RealityGateOf(tag string) RealityGate {
+	if _, _, _, ok := ParseXrayVersion(tag); !ok {
+		return RealityGateNone
+	}
+	switch {
+	case CompareXrayVersions(tag, realityMLKEMSince) >= 0:
+		return RealityGateMLKEM
+	case CompareXrayVersions(tag, realityMinVerSince) >= 0:
+		return RealityGateMinVer
+	default:
+		return RealityGateNone
+	}
+}
