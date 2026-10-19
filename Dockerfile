@@ -27,7 +27,11 @@ COPY --from=frontend /src/internal/web/dist ./internal/web/dist
 
 ENV CGO_ENABLED=1
 ENV CGO_CFLAGS="-D_LARGEFILE64_SOURCE"
-RUN go build -ldflags "-w -s" -o build/lx-ui main.go
+# Self-update / version checks follow this "owner/repo" (docker.yml passes the
+# building repository). Empty leaves the panel's self-update disabled with a
+# clear message instead of pointing at a placeholder.
+ARG LXUI_RELEASE_REPO=""
+RUN go build -ldflags "-w -s -X github.com/mhsanaei/3x-ui/v3/internal/config.releaseRepo=${LXUI_RELEASE_REPO}" -o build/lx-ui main.go
 RUN ./DockerInit.sh "$TARGETARCH"
 
 # ========================================================

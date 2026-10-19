@@ -20,6 +20,12 @@ on:
       - "lx-ui.service.rhel"
       - ".github/workflows/release.yml"
 
+# Bundled Xray-core release. Keep in sync with xray.RecommendedXrayVersion
+# (internal/xray/compat.go) and DockerInit.sh; TestRecommendedXrayVersionMatchesPins
+# fails when they drift.
+env:
+  XRAY_VERSION: v26.10.10
+
 jobs:
   build:
     permissions:
@@ -116,37 +122,26 @@ jobs:
           mkdir lx-ui/bin
           cd lx-ui/bin
 
-          # Download dependencies
-          Xray_URL="https://github.com/XTLS/Xray-core/releases/download/v26.10.10/"
-          if [ "${{ matrix.platform }}" == "amd64" ]; then
-            fetch ${Xray_URL}Xray-linux-64.zip
-            unzip Xray-linux-64.zip
-            rm -f Xray-linux-64.zip
-          elif [ "${{ matrix.platform }}" == "arm64" ]; then
-            fetch ${Xray_URL}Xray-linux-arm64-v8a.zip
-            unzip Xray-linux-arm64-v8a.zip
-            rm -f Xray-linux-arm64-v8a.zip
-          elif [ "${{ matrix.platform }}" == "armv7" ]; then
-            fetch ${Xray_URL}Xray-linux-arm32-v7a.zip
-            unzip Xray-linux-arm32-v7a.zip
-            rm -f Xray-linux-arm32-v7a.zip
-          elif [ "${{ matrix.platform }}" == "armv6" ]; then
-            fetch ${Xray_URL}Xray-linux-arm32-v6.zip
-            unzip Xray-linux-arm32-v6.zip
-            rm -f Xray-linux-arm32-v6.zip
-          elif [ "${{ matrix.platform }}" == "386" ]; then
-            fetch ${Xray_URL}Xray-linux-32.zip
-            unzip Xray-linux-32.zip
-            rm -f Xray-linux-32.zip
-          elif [ "${{ matrix.platform }}" == "armv5" ]; then
-            fetch ${Xray_URL}Xray-linux-arm32-v5.zip
-            unzip Xray-linux-arm32-v5.zip
-            rm -f Xray-linux-arm32-v5.zip
-          elif [ "${{ matrix.platform }}" == "s390x" ]; then
-            fetch ${Xray_URL}Xray-linux-s390x.zip
-            unzip Xray-linux-s390x.zip
-            rm -f Xray-linux-s390x.zip
-          fi
+          # Download dependencies; the Xray archive is checked against the
+          # SHA2-256 that XTLS publishes in the .dgst sidecar.
+          case "${{ matrix.platform }}" in
+            amd64) XRAY_ZIP=Xray-linux-64.zip ;;
+            arm64) XRAY_ZIP=Xray-linux-arm64-v8a.zip ;;
+            armv7) XRAY_ZIP=Xray-linux-arm32-v7a.zip ;;
+            armv6) XRAY_ZIP=Xray-linux-arm32-v6.zip ;;
+            386) XRAY_ZIP=Xray-linux-32.zip ;;
+            armv5) XRAY_ZIP=Xray-linux-arm32-v5.zip ;;
+            s390x) XRAY_ZIP=Xray-linux-s390x.zip ;;
+            *) echo "no Xray archive for ${{ matrix.platform }}" >&2; exit 1 ;;
+          esac
+          Xray_URL="https://github.com/XTLS/Xray-core/releases/download/${XRAY_VERSION}/"
+          fetch "${Xray_URL}${XRAY_ZIP}"
+          fetch "${Xray_URL}${XRAY_ZIP}.dgst"
+          XRAY_SHA256=$(sed -n 's/^SHA2-256= *//p' "${XRAY_ZIP}.dgst" | head -n1)
+          [ -n "$XRAY_SHA256" ] || { echo "no SHA2-256 in ${XRAY_ZIP}.dgst" >&2; exit 1; }
+          echo "${XRAY_SHA256}  ${XRAY_ZIP}" | sha256sum -c -
+          unzip "${XRAY_ZIP}"
+          rm -f "${XRAY_ZIP}" "${XRAY_ZIP}.dgst"
           rm -f geoip.dat geosite.dat
           fetch https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geoip.dat
           fetch https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat
@@ -287,7 +282,7 @@ jobs:
           cd lx-ui\bin
 
           # Download Xray for Windows
-          $Xray_URL = "https://github.com/XTLS/Xray-core/releases/download/v26.10.10/"
+          $Xray_URL = "https://github.com/XTLS/Xray-core/releases/download/$env:XRAY_VERSION/"
           Invoke-WebRequest @retry -Uri "${Xray_URL}Xray-windows-64.zip" -OutFile "Xray-windows-64.zip"
           Expand-Archive -Path "Xray-windows-64.zip" -DestinationPath .
           Remove-Item "Xray-windows-64.zip"

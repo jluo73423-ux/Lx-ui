@@ -62,7 +62,8 @@ func TestVerifiedVersionsAreOrderedAndBelowRecommended(t *testing.T) {
 // version, otherwise fresh installs would start on a different tier.
 func TestRecommendedXrayVersionMatchesPins(t *testing.T) {
 	root := filepath.Join("..", "..")
-	re := regexp.MustCompile(`Xray-core/releases/download/(v[0-9]+\.[0-9]+\.[0-9]+)/`)
+	// Either a literal download URL or the workflow-level XRAY_VERSION variable.
+	re := regexp.MustCompile(`Xray-core/releases/download/(v[0-9]+\.[0-9]+\.[0-9]+)/|XRAY_VERSION:\s*"?(v[0-9]+\.[0-9]+\.[0-9]+)"?`)
 	for _, rel := range []string{".github/workflows/release.yml", "DockerInit.sh"} {
 		data, err := os.ReadFile(filepath.Join(root, rel))
 		if err != nil {
@@ -70,11 +71,12 @@ func TestRecommendedXrayVersionMatchesPins(t *testing.T) {
 		}
 		m := re.FindAllSubmatch(data, -1)
 		if len(m) == 0 {
-			t.Fatalf("%s: no Xray download pin found", rel)
+			t.Fatalf("%s: no Xray version pin found", rel)
 		}
 		for _, sm := range m {
-			if string(sm[1]) != RecommendedXrayVersion {
-				t.Errorf("%s pins Xray %s, want RecommendedXrayVersion %s", rel, sm[1], RecommendedXrayVersion)
+			got := string(sm[1]) + string(sm[2])
+			if got != RecommendedXrayVersion {
+				t.Errorf("%s pins Xray %s, want RecommendedXrayVersion %s", rel, got, RecommendedXrayVersion)
 			}
 		}
 	}

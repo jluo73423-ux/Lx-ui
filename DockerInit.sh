@@ -33,9 +33,17 @@ if [ -z "$MTG_MULTI_VER" ]; then
 fi
 mkdir -p build/bin
 cd build/bin
-curl -sfLRO "https://github.com/XTLS/Xray-core/releases/download/v26.10.10/Xray-linux-${ARCH}.zip"
+# Bundled Xray: keep in sync with xray.RecommendedXrayVersion (internal/xray/compat.go).
+XRAY_URL="https://github.com/XTLS/Xray-core/releases/download/v26.10.10/Xray-linux-${ARCH}.zip"
+curl -sfLRO "$XRAY_URL"
+curl -sfLRO "${XRAY_URL}.dgst"
+XRAY_SHA256=$(sed -n 's/^SHA2-256= *//p' "Xray-linux-${ARCH}.zip.dgst" | head -n 1)
+if [ -z "$XRAY_SHA256" ] || ! echo "${XRAY_SHA256}  Xray-linux-${ARCH}.zip" | sha256sum -c -; then
+    echo "DockerInit: Xray archive checksum verification failed" >&2
+    exit 1
+fi
 unzip "Xray-linux-${ARCH}.zip"
-rm -f "Xray-linux-${ARCH}.zip" geoip.dat geosite.dat
+rm -f "Xray-linux-${ARCH}.zip" "Xray-linux-${ARCH}.zip.dgst" geoip.dat geosite.dat
 mv xray "xray-linux-${FNAME}"
 # mtg-multi (MTProto sidecar) ships prebuilt release binaries for every target
 # we package, so download and unpack the matching one instead of compiling.
