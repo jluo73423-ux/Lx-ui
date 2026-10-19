@@ -1674,6 +1674,14 @@ resolve_latest_tag() {
     curl -Ls --retry 5 --retry-delay 3 --connect-timeout 15 --max-time 60 "https://api.github.com/repos/${LXUI_REPO}/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/'
 }
 
+# dev_release_available reports whether the rolling dev-latest pre-release
+# ships an archive for this architecture (used when no stable release exists).
+dev_release_available() {
+    local code
+    code=$(curl -sIL --retry 3 --retry-delay 3 --connect-timeout 15 --max-time 60 -o /dev/null -w '%{http_code}' "${LXUI_RELEASE_BASE}/download/dev-latest/lx-ui-linux-$(arch).tar.gz" 2> /dev/null)
+    [[ "${code}" == "200" ]]
+}
+
 # Releases publish <asset>.sha256 next to each archive. A mismatch or a failed
 # sidecar download aborts the install; only a 404 (releases predating the
 # sidecar) is tolerated with a warning.
@@ -1726,9 +1734,20 @@ install_lx-ui() {
     if [ $# == 0 ]; then
         tag_version=$(resolve_latest_tag)
         if [[ ! -n "$tag_version" ]]; then
-            echo -e "${red}Failed to fetch lx-ui version, it may be due to GitHub API restrictions, please try it later${plain}"
-            exit 1
+            # No stable release yet (GitHub's releases/latest ignores
+            # pre-releases): fall back to the rolling dev build when it exists
+            # instead of failing outright.
+            if dev_release_available; then
+                echo -e "${yellow}No stable lx-ui release found in ${LXUI_REPO}; falling back to the rolling dev build (dev-latest).${plain}"
+                set -- dev-latest
+            else
+                echo -e "${red}Failed to fetch lx-ui version: ${LXUI_REPO} has no stable release and no dev-latest build for linux-$(arch) (or GitHub is unreachable / rate-limited).${plain}"
+                echo -e "${red}Check ${LXUI_RELEASE_BASE} and retry, or pass an explicit tag: bash install.sh <tag>${plain}"
+                exit 1
+            fi
         fi
+    fi
+    if [ $# == 0 ]; then
         echo -e "Got lx-ui latest version: ${tag_version}, beginning the installation..."
         curl -fLR --retry 5 --retry-delay 3 --connect-timeout 15 --speed-limit 1 --speed-time 300 -o ${xui_folder}-linux-$(arch).tar.gz ${LXUI_RELEASE_BASE}/download/${tag_version}/lx-ui-linux-$(arch).tar.gz
         if [[ $? -ne 0 ]]; then

@@ -533,7 +533,15 @@ update_lx-ui() {
     else
         tag_version=$(${curl_bin} -Ls "https://api.github.com/repos/${LXUI_REPO}/releases/latest" 2> /dev/null | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
         if [[ ! -n "$tag_version" ]]; then
-            _fail "ERROR: Failed to fetch lx-ui version, it may be due to GitHub API restrictions, please try it later"
+            # No stable release yet: releases/latest ignores pre-releases, so
+            # fall back to the rolling dev build when it exists.
+            dev_code=$(${curl_bin} -sIL -o /dev/null -w '%{http_code}' "${LXUI_RELEASE_BASE}/download/dev-latest/lx-ui-linux-$(arch).tar.gz" 2> /dev/null)
+            if [[ "${dev_code}" == "200" ]]; then
+                echo -e "${yellow}No stable lx-ui release found; updating to the rolling dev build (dev-latest).${plain}"
+                tag_version="dev-latest"
+            else
+                _fail "ERROR: Failed to fetch lx-ui version (no stable release and no dev-latest build, or GitHub API restrictions), please try it later"
+            fi
         fi
     fi
     echo -e "Got lx-ui latest version: ${tag_version}, beginning the installation..."
