@@ -1,0 +1,20 @@
+# Opt-in escape hatch for #6871-style failures ("failed to create server >
+# operation not permitted" after switching the Xray version). NOT installed by
+# default and not a confirmed fix: the root cause is unconfirmed.
+#
+# Install:
+#   sudo mkdir -p /etc/systemd/system/lx-ui.service.d
+#   sudo cp 90-lxui-relaxed.conf.example /etc/systemd/system/lx-ui.service.d/90-lxui-relaxed.conf
+#   sudo systemctl daemon-reload && sudo systemctl restart lx-ui
+# If Xray starts with it, remove the lines one by one to find the restriction
+# that matters and report it. Remove the file to return to the full sandbox.
+[Service]
+# Drop the seccomp allow-list written by install.sh/update.sh (10-xui-sandbox.conf).
+SystemCallFilter=
+SystemCallErrorNumber=
+# Allow namespaces and all socket families.
+RestrictNamespaces=no
+RestrictAddressFamilies=
+# Widen the capability bounding set. Entries add to the unit's set; never
+# assign it empty here, that would reset it to NO capabilities.
+CapabilityBoundingSet=CAP_SYS_ADMIN CAP_BPF CAP_SYS_RESOURCE CAP_NET_BROADCAST CAP_SYS_PTRACE
