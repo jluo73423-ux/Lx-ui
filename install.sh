@@ -1751,10 +1751,10 @@ install_lx-ui() {
             echo -e "${yellow}Installing the rolling dev build (tag: dev-latest). This is a per-commit pre-release, not a stable version.${plain}"
         else
             tag_version_numeric=${tag_version#v}
-            min_version="2.3.5"
+            min_version="1.0.0"
 
             if [[ "$(printf '%s\n' "$min_version" "$tag_version_numeric" | sort -V | head -n1)" != "$min_version" ]]; then
-                echo -e "${red}Please use a newer version (at least v2.3.5). Exiting installation.${plain}"
+                echo -e "${red}Please use a newer version (at least v1.0.0). Exiting installation.${plain}"
                 exit 1
             fi
         fi
@@ -2062,6 +2062,135 @@ install_lx-ui() {
 └───────────────────────────────────────────────────────┘"
 }
 
+
+# ---------------------------------------------------------------------------
+# Migration from an existing 3x-ui installation  # lxui:keep
+#   usage: install.sh --migrate-from-3x-ui [version]  # lxui:keep
+#
+# Copies, never moves: the legacy folder (LEGACY_DIR) stays untouched and is
+# additionally backed up to LEGACY_DIR.bak-<timestamp>. If lx-ui does not come
+# up healthy, the script stops lx-ui and restarts the legacy service
+# (automatic rollback).
+# Lines marked lxui:keep name the legacy product and are skipped by
+# tools/rebrand.sh.
+# ---------------------------------------------------------------------------
+LEGACY_DISPLAY="3x-ui"         # lxui:keep
+LEGACY_NAME="x-ui"             # lxui:keep
+LEGACY_DIR="/etc/x-ui"         # lxui:keep
+LXUI_MIGRATE=0
+_mig_ts=""
+_mig_was_active=0
+_mig_was_enabled=0
+_mig_done=0
+_mig_started=0
+
+legacy_install_present() {
+    [[ -f "${LEGACY_DIR}/${LEGACY_NAME}.db" || -f "${xui_service}/${LEGACY_NAME}.service" ]]
+}
+
+migrate_rollback() {
+    local rc=$?
+    [[ "${LXUI_MIGRATE}" == "1" && "${_mig_started}" == "1" && "${_mig_done}" != "1" ]] || return 0
+    echo -e "${red}Migration from ${LEGACY_DISPLAY} failed (exit ${rc}); rolling back...${plain}"
+    systemctl stop lx-ui > /dev/null 2>&1
+    systemctl disable lx-ui > /dev/null 2>&1
+    if [[ "${_mig_was_enabled}" == "1" ]]; then
+        systemctl enable "${LEGACY_NAME}" > /dev/null 2>&1
+    fi
+    if [[ "${_mig_was_active}" == "1" ]]; then
+        systemctl start "${LEGACY_NAME}" > /dev/null 2>&1
+    fi
+    echo -e "${yellow}${LEGACY_DISPLAY} restored: ${LEGACY_DIR} was never modified (backup: ${LEGACY_DIR}.bak-${_mig_ts}).${plain}"
+    echo -e "${yellow}The partial Lx-ui data in /etc/lx-ui was left in place for inspection.${plain}"
+    _mig_done=1
+}
+
+migrate_from_legacy_prepare() {
+    if ! command -v systemctl > /dev/null 2>&1; then
+        echo -e "${red}--migrate-from-${LEGACY_DISPLAY} needs systemd.${plain}"
+        exit 1
+    fi
+    if [[ ! -d "${LEGACY_DIR}" ]]; then
+        echo -e "${red}No ${LEGACY_DISPLAY} data found in ${LEGACY_DIR}; nothing to migrate.${plain}"
+        exit 1
+    fi
+    _mig_ts=$(date +%Y%m%d-%H%M%S)
+    systemctl is-active --quiet "${LEGACY_NAME}" && _mig_was_active=1
+    systemctl is-enabled --quiet "${LEGACY_NAME}" 2> /dev/null && _mig_was_enabled=1
+    _mig_started=1
+    trap migrate_rollback EXIT
+
+    echo -e "${green}Migrating ${LEGACY_DISPLAY} -> Lx-ui (backup: ${LEGACY_DIR}.bak-${_mig_ts})${plain}"
+    systemctl stop "${LEGACY_NAME}" > /dev/null 2>&1
+    systemctl disable "${LEGACY_NAME}" > /dev/null 2>&1
+
+    cp -a "${LEGACY_DIR}" "${LEGACY_DIR}.bak-${_mig_ts}" || exit 1
+    if [[ -e /etc/lx-ui/lx-ui.db ]]; then
+        echo -e "${yellow}/etc/lx-ui already has a database; moving it to /etc/lx-ui.pre-migrate-${_mig_ts}${plain}"
+        mv /etc/lx-ui "/etc/lx-ui.pre-migrate-${_mig_ts}" || exit 1
+    fi
+    mkdir -p /etc/lx-ui || exit 1
+    cp -an "${LEGACY_DIR}/." /etc/lx-ui/ || exit 1
+    local suf
+    for suf in .db .db-wal .db-shm; do
+        if [[ -f "/etc/lx-ui/${LEGACY_NAME}${suf}" && ! -e "/etc/lx-ui/lx-ui${suf}" ]]; then
+            mv "/etc/lx-ui/${LEGACY_NAME}${suf}" "/etc/lx-ui/lx-ui${suf}" || exit 1
+        fi
+    done
+    printf 'source=%s\ncopied_at=%s\nby=install.sh\n' "${LEGACY_DIR}" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > /etc/lx-ui/.migrated-from-${LEGACY_NAME}
+    chmod 600 /etc/lx-ui/.migrated-from-${LEGACY_NAME}
+
+    # Service environment file (PostgreSQL DSN, XUI_* overrides): copy and point
+    # the legacy folders at the Lx-ui ones.
+    local d
+    for d in /etc/default /etc/conf.d /etc/sysconfig; do
+        if [[ -f "${d}/${LEGACY_NAME}" && ! -e "${d}/lx-ui" ]]; then
+            cp -a "${d}/${LEGACY_NAME}" "${d}/lx-ui" || exit 1
+            sed -i -e "s#/etc/${LEGACY_NAME}\\b#/etc/lx-ui#g" \
+                -e "s#/usr/local/${LEGACY_NAME}\\b#/usr/local/lx-ui#g" \
+                -e "s#/var/log/${LEGACY_NAME}\\b#/var/log/lx-ui#g" "${d}/lx-ui"
+            echo -e "${green}Copied ${d}/${LEGACY_NAME} -> ${d}/lx-ui${plain}"
+        fi
+    done
+}
+
+migrate_from_legacy_verify() {
+    local i
+    for i in $(seq 1 20); do
+        if systemctl is-active --quiet lx-ui; then
+            sleep 3
+            if systemctl is-active --quiet lx-ui; then
+                _mig_done=1
+                trap - EXIT
+                echo -e "${green}Migration complete: lx-ui is running with your ${LEGACY_DISPLAY} data.${plain}"
+                echo -e "${green}${LEGACY_DISPLAY} is stopped and disabled; its data is kept in ${LEGACY_DIR} and ${LEGACY_DIR}.bak-${_mig_ts}.${plain}"
+                echo -e "Manual rollback: systemctl disable --now lx-ui && systemctl enable --now ${LEGACY_NAME}"
+                return 0
+            fi
+        fi
+        sleep 1
+    done
+    echo -e "${red}lx-ui did not become active after the migration.${plain}"
+    journalctl -u lx-ui -n 30 --no-pager 2> /dev/null
+    exit 1
+}
+
+case "${1:-}" in
+    --migrate-from-3x-ui) # lxui:keep
+        LXUI_MIGRATE=1
+        shift
+        ;;
+esac
+
 echo -e "${green}Running...${plain}"
+if [[ "${LXUI_MIGRATE}" == "1" ]]; then
+    migrate_from_legacy_prepare
+elif legacy_install_present; then
+    echo -e "${yellow}An existing ${LEGACY_DISPLAY} installation was found. To move its data to Lx-ui, re-run with --migrate-from-${LEGACY_DISPLAY}.${plain}"
+    echo -e "${yellow}Continuing with a side-by-side install; stop ${LEGACY_NAME} first if both panels use the same port.${plain}"
+fi
 install_base
 install_lx-ui $1
+if [[ "${LXUI_MIGRATE}" == "1" ]]; then
+    migrate_from_legacy_verify
+fi
