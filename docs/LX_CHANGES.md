@@ -176,3 +176,22 @@ subscription's share link; all carry traffic and the panel counts it).
   resolve to private/benchmark ranges, e.g. on hosts whose resolver is a
   fake-IP DNS (the dev box is one — the e2e test therefore targets an IP
   literal).
+
+## 2026-10-20 — v1.0.1
+
+First stable release after 1.0.0. Summary of the fixes since 1.0.0:
+
+- Fixed switching the Xray core from the panel failing with
+  `fork/exec bin/.xray-new-*: no such file or directory` (the pre-update
+  config test now uses absolute paths).
+- `install.sh` / `update.sh` fall back to the rolling `dev-latest` build when
+  the repository has no stable release yet (checksum still verified).
+- The Xray version list now labels which cores enforce a REALITY client gate
+  (ML-KEM on v26.9.8+, minClientVer on v26.7.11–v26.9.7). Clients without
+  ML-KEM (for example Shadowrocket) show "online but no traffic" on those cores;
+  see the README troubleshooting section.
+- Docs site: removed the deleted `/sponsors` API, formatted the LX docs.
+- Release workflow: tagged releases are now published as a normal release and
+  marked latest once every platform asset is uploaded, so `releases/latest`,
+  `install.sh`, `update.sh` and the panel update check resolve the stable tag.
+  `dev-latest` stays a prerelease that is never marked latest.
