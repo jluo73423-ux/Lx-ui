@@ -61,7 +61,7 @@ func Dialect() string {
 const (
 	defaultUsername       = "admin"
 	defaultPassword       = "admin"
-	sqliteBackupDirPrefix = ".x-ui-backup-"
+	sqliteBackupDirPrefix = ".lx-ui-backup-"
 )
 
 func allModels() []any {

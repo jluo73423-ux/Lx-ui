@@ -1,12 +1,12 @@
 ---
 title: MASQUE
-description: راه‌اندازی inbound از نوع MASQUE (CONNECT-IP) در 3x-ui، اتصال outbound به سرورهای MASQUE و دسترسی به Cloudflare WARP از طریق MASQUE.
+description: راه‌اندازی inbound از نوع MASQUE (CONNECT-IP) در lx-ui، اتصال outbound به سرورهای MASQUE و دسترسی به Cloudflare WARP از طریق MASQUE.
 icon: Waypoints
 ---
 
 **MASQUE** بسته‌های IP را با روش CONNECT-IP روی HTTP/3 (یا HTTP/2) حمل می‌کند، بنابراین
 کلاینت یک تونل کامل لایهٔ ۳ می‌گیرد که شبیه ترافیک معمولی HTTPS است. xray-core آن را به‌صورت
-بومی ارائه می‌کند؛ 3x-ui آن را به‌عنوان پروتکل inbound، پروتکل outbound و transport متناظر
+بومی ارائه می‌کند؛ lx-ui آن را به‌عنوان پروتکل inbound، پروتکل outbound و transport متناظر
 `masque` که هر دو روی آن سوار می‌شوند در اختیار می‌گذارد.
 
 ## Inbound
@@ -34,7 +34,7 @@ icon: Waypoints
 | **آدرس / پورت**            | سرور MASQUE. |
 | **Remote DNS**             | IPهای اختیاری سرور DNS که داخل تونل پرس‌وجو می‌شوند. |
 | **Host / Path**            | authority و مسیر درخواست CONNECT-IP؛ مسیر باید با مسیر سرور یکسان باشد. |
-| **نام کاربری / رمز عبور**  | اعتبارنامهٔ HTTP Basic — روی سرور 3x-ui، همان ایمیل و رمز عبور کلاینت. |
+| **نام کاربری / رمز عبور**  | اعتبارنامهٔ HTTP Basic — روی سرور lx-ui، همان ایمیل و رمز عبور کلاینت. |
 | **Headers**                | هدرهای اضافی درخواست. |
 | **TLS**                    | الزامی. ALPN فقط `h2` اتصال را به HTTP/2 روی TCP می‌برد؛ در غیر این صورت HTTP/3 استفاده می‌شود. |
 

@@ -235,7 +235,7 @@ func TestApplyTransport_TCPHeader(t *testing.T) {
 		wantHost     string
 	}{
 		{
-			name:      "Actual 3x-ui Panel Inbound Data Structure (Including Empty Response Headers)",
+			name:      "Actual lx-ui Panel Inbound Data Structure (Including Empty Response Headers)",
 			proxyType: "ss",
 			stream: map[string]any{
 				"tcpSettings": map[string]any{

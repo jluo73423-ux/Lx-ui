@@ -1,4 +1,4 @@
-# 3x-ui — Architecture & Code Map
+# lx-ui — Architecture & Code Map
 
 > Navigation map for contributors and AI coding agents.
 > Goal: jump to the right file in one hop instead of grepping the whole tree.
@@ -13,7 +13,7 @@
 
 ## 1. Mental model (the 30-second version)
 
-3x-ui is a **web control panel for [Xray-core](https://github.com/XTLS/Xray-core)**. The Go
+lx-ui is a **web control panel for [Xray-core](https://github.com/XTLS/Xray-core)**. The Go
 backend is the source of truth: it stores inbounds/clients/settings in a DB, renders an
 Xray JSON config from that state, supervises the Xray child process, and exposes a REST +
 WebSocket API. A React SPA (built by Vite, embedded into the Go binary) is the UI. A second,
@@ -47,7 +47,7 @@ Two key ideas that explain most of the complexity:
 1. **The DB → Xray config pipeline.** Inbounds/clients live in the DB. On every change the
    backend regenerates the Xray config and applies it — preferring a _hot diff_ (live gRPC
    API mutation) over a full process restart. See §5.1.
-2. **The Runtime abstraction (multi-node).** A panel can manage remote "nodes" (other 3x-ui
+2. **The Runtime abstraction (multi-node).** A panel can manage remote "nodes" (other lx-ui
    instances). Every state-changing inbound/client operation is dispatched through a
    `runtime.Runtime` interface that is either **`Local`** (this box's Xray gRPC API) or
    **`Remote`** (HTTPS call to a child node, with `verify`/`skip`/`pin`/`mtls` TLS modes).
@@ -91,7 +91,7 @@ Browser (React, fetch)
   → POST {basePath}/panel/api/...
     → Gin engine (internal/web/web.go: initRouter)
       → middleware chain: SecurityHeaders → MaxBodyBytes (10 MiB; importDB exempt)
-                          → [DomainValidator, if webDomain set] → gzip → sessions("3x-ui")
+                          → [DomainValidator, if webDomain set] → gzip → sessions("lx-ui")
                           → base-path/cache-control context → Localizer
                           → API routes add: ConfigEnvelope (zstd + SHA-256) → CSRF
         → Controller (internal/web/controller/*.go)   // HTTP concerns only: bind, validate, respond
@@ -126,7 +126,7 @@ node heartbeat every 5s, periodic traffic resets (hourly/daily/weekly/monthly). 
 ## 4. Directory map (what lives where)
 
 ```
-3x-ui/
+lx-ui/
 ├── main.go                     # Entry point: CLI (run / migrate / migrate-db / setting / cert),
 │                               #   bootstrap, signal handling, restart loop
 ├── go.mod / go.sum             # Go deps (module path ends in /v3)
@@ -288,8 +288,8 @@ node heartbeat every 5s, periodic traffic resets (hourly/daily/weekly/monthly). 
 ├── media/                    # README images
 │
 ├── Dockerfile / docker-compose.yml / DockerEntrypoint.sh / DockerInit.sh   # Container build/run
-├── install.sh / update.sh / x-ui.sh                        # VPS install + management CLI
-├── x-ui.service.*  / x-ui.rc                               # systemd units (debian/rhel/arch) + rc script
+├── install.sh / update.sh / lx-ui.sh                        # VPS install + management CLI
+├── lx-ui.service.*  / lx-ui.rc                               # systemd units (debian/rhel/arch) + rc script
 ├── windows_files/                                          # Windows service support
 └── .github/workflows/        # CI: ci.yml, codeql.yml, docker.yml, release.yml,
                               #     mutation.yml, cleanup_caches.yml
@@ -321,7 +321,7 @@ Restart is debounced via an atomic "need restart" flag (`SetToNeedRestart` /
 
 ### 5.2 Runtime abstraction — Local vs Remote (multi-node) ⭐ most important
 
-A "node" (`model.Node`) is another 3x-ui instance this panel controls. Every state-changing
+A "node" (`model.Node`) is another lx-ui instance this panel controls. Every state-changing
 inbound/client operation goes through the `runtime.Runtime` interface so the _same service
 code_ works whether the target is the local Xray or a remote node.
 
@@ -608,7 +608,7 @@ root → `go build ./...` / `go run main.go`.
 ## 10. Gotchas & conventions
 
 - **Module path is `.../v3`.** Internal imports use `github.com/mhsanaei/3x-ui/v3/internal/...`.
-- **SQLite vs Postgres.** Default is SQLite at `{XUI_DB_FOLDER}/x-ui.db`. Postgres via
+- **SQLite vs Postgres.** Default is SQLite at `{XUI_DB_FOLDER}/lx-ui.db`. Postgres via
   `XUI_DB_TYPE=postgres` + `XUI_DB_DSN`. Some SQL paths are dialect-aware (`database/dialect.go`);
   test both when touching raw queries (there are `*_scale_postgres_test.go` suites).
 - **`Inbound.Settings` / `StreamSettings` / `Sniffing` are raw JSON strings**, not structured

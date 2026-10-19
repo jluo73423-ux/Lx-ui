@@ -1,4 +1,4 @@
-// Package main is the entry point for the 3x-ui web panel application.
+// Package main is the entry point for the lx-ui web panel application.
 // It initializes the database, web server, and handles command-line operations for managing the panel.
 package main
 
@@ -70,7 +70,7 @@ func initNodeTokenCrypto() error {
 	return nil
 }
 
-// runWebServer initializes and starts the web server for the 3x-ui panel.
+// runWebServer initializes and starts the web server for the lx-ui panel.
 func runWebServer() {
 	log.Printf("Starting %v %v", config.GetName(), config.GetPanelVersion())
 
@@ -548,7 +548,7 @@ func GetApiToken(getApiToken bool, tokenName, tokenScope string) {
 	fmt.Println("apiToken:", created.Token)
 }
 
-// migrateDb performs database migration operations for the 3x-ui panel.
+// migrateDb performs database migration operations for the lx-ui panel.
 func migrateDb() {
 	inboundService := service.InboundService{}
 
@@ -563,7 +563,7 @@ func migrateDb() {
 }
 
 // loadServiceEnvFile loads the systemd EnvironmentFile so CLI subcommands like
-// "x-ui setting" hit the same database backend as the panel. godotenv.Load does
+// "lx-ui setting" hit the same database backend as the panel. godotenv.Load does
 // not override variables already in the environment, so it is a no-op for the
 // systemd-managed service.
 func loadServiceEnvFile() {
@@ -578,7 +578,7 @@ func loadServiceEnvFile() {
 	}
 }
 
-// main is the entry point of the 3x-ui application.
+// main is the entry point of the lx-ui application.
 // It parses command-line arguments to run the web server, migrate database, or update settings.
 func main() {
 	loadServiceEnvFile()
@@ -600,7 +600,7 @@ func main() {
 	var migrateRestore string
 	var migrateOut string
 	migrateDbCmd.StringVar(&migrateDsn, "dsn", "", "Destination PostgreSQL DSN (postgres://user:pass@host:port/db?sslmode=disable)")
-	migrateDbCmd.StringVar(&migrateSrc, "src", "", "Source SQLite file (defaults to the configured x-ui.db)")
+	migrateDbCmd.StringVar(&migrateSrc, "src", "", "Source SQLite file (defaults to the configured lx-ui.db)")
 	migrateDbCmd.StringVar(&migrateDump, "dump", "", "Write a portable SQL text dump of --src to this file (.db -> .dump)")
 	migrateDbCmd.StringVar(&migrateRestore, "restore", "", "Rebuild a SQLite database from this SQL text dump (.dump -> .db); requires --out")
 	migrateDbCmd.StringVar(&migrateOut, "out", "", "Destination SQLite file for --restore (must not already exist)")
@@ -768,7 +768,7 @@ func commandHelp() string {
 	return `
 Commands:
     run            run web panel
-    migrate        migrate from other/old x-ui
+    migrate        migrate from other/old lx-ui
     migrate-db     SQLite <-> .dump (--dump/--restore) or copy into PostgreSQL (--dsn)
     encrypt-tokens encrypt node bearer tokens with the configured active key
     setting        set settings

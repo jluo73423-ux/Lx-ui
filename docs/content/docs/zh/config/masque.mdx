@@ -1,11 +1,11 @@
 ---
 title: MASQUE
-description: 在 3x-ui 中提供 MASQUE（CONNECT-IP）入站、将出站连接到 MASQUE 服务器，以及通过 MASQUE 连接 Cloudflare WARP。
+description: 在 lx-ui 中提供 MASQUE（CONNECT-IP）入站、将出站连接到 MASQUE 服务器，以及通过 MASQUE 连接 Cloudflare WARP。
 icon: Waypoints
 ---
 
 **MASQUE** 使用 CONNECT-IP 方法通过 HTTP/3（或 HTTP/2）承载 IP 数据包，客户端因此获得一条看起来与普通
-HTTPS 流量无异的完整三层隧道。xray-core 原生支持它；3x-ui 将其作为入站协议、出站协议以及二者共用的 `masque`
+HTTPS 流量无异的完整三层隧道。xray-core 原生支持它；lx-ui 将其作为入站协议、出站协议以及二者共用的 `masque`
 传输方式提供。
 
 ## 入站
@@ -32,7 +32,7 @@ HTTPS 流量无异的完整三层隧道。xray-core 原生支持它；3x-ui 将�
 | **地址 / 端口**     | MASQUE 服务器。 |
 | **Remote DNS**      | 可选，在隧道内查询的 DNS 服务器 IP。 |
 | **Host / Path**     | CONNECT-IP 请求的 authority 和路径；路径必须与服务端一致。 |
-| **用户名 / 密码**   | HTTP Basic 凭据——在 3x-ui 服务端上即客户端的邮箱和密码。 |
+| **用户名 / 密码**   | HTTP Basic 凭据——在 lx-ui 服务端上即客户端的邮箱和密码。 |
 | **Headers**         | 额外的请求头。 |
 | **TLS**             | 必需。ALPN 仅为 `h2` 时改用 TCP 上的 HTTP/2；否则使用 HTTP/3。 |
 

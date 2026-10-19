@@ -1,12 +1,12 @@
 ---
 title: MASQUE
-description: Serve MASQUE (CONNECT-IP) inbounds in 3x-ui, connect outbounds to MASQUE servers, and reach Cloudflare WARP over MASQUE.
+description: Serve MASQUE (CONNECT-IP) inbounds in lx-ui, connect outbounds to MASQUE servers, and reach Cloudflare WARP over MASQUE.
 icon: Waypoints
 ---
 
 **MASQUE** carries IP packets over HTTP/3 (or HTTP/2) with the CONNECT-IP method, so a
 client gets a full layer-3 tunnel that looks like ordinary HTTPS traffic. xray-core
-serves it natively; 3x-ui offers it as an inbound protocol, an outbound protocol, and the
+serves it natively; lx-ui offers it as an inbound protocol, an outbound protocol, and the
 matching `masque` transport they both ride on.
 
 ## Inbound
@@ -34,7 +34,7 @@ Pick **masque** as the outbound protocol, then set:
 | **Address / Port**      | The MASQUE server. |
 | **Remote DNS**          | Optional DNS server IPs queried inside the tunnel. |
 | **Host / Path**         | Authority and path of the CONNECT-IP request; the path must match the server's. |
-| **Username / Password** | HTTP Basic credentials — on a 3x-ui server, the client's email and password. |
+| **Username / Password** | HTTP Basic credentials — on a lx-ui server, the client's email and password. |
 | **Headers**             | Extra request headers. |
 | **TLS**                 | Required. An ALPN of `h2` alone switches to HTTP/2 over TCP; otherwise HTTP/3 is used. |
 

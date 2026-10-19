@@ -1,5 +1,18 @@
 #!/bin/bash
 
+# >>> lx-ui identity (managed by tools/rebrand.sh; edit tools/rebrand.env) >>>
+LXUI_REPO="${LXUI_REPO:-<ORG>/Lx-ui}"
+LXUI_RAW_BASE="https://raw.githubusercontent.com/${LXUI_REPO}"
+LXUI_RELEASE_BASE="https://github.com/${LXUI_REPO}/releases"
+# LXUI_* variables are canonical; the legacy XUI_* names keep working as aliases.
+# An LXUI_ value wins over the XUI_ alias of the same name.
+while IFS='=' read -r __lxui_k __lxui_v; do
+    case "$__lxui_k" in LXUI_REPO | LXUI_RAW_BASE | LXUI_RELEASE_BASE) continue ;; esac
+    export "XUI_${__lxui_k#LXUI_}=${__lxui_v}"
+done < <(env | grep -E '^LXUI_[A-Z0-9_]+=' || true)
+unset __lxui_k __lxui_v
+# <<< lx-ui identity <<<
+
 red='\033[0;31m'
 green='\033[0;32m'
 blue='\033[0;34m'
@@ -90,10 +103,10 @@ fi
 if [[ "${running_in_docker}" == "true" ]]; then
     xui_folder="${XUI_MAIN_FOLDER:=/app}"
 else
-    xui_folder="${XUI_MAIN_FOLDER:=/usr/local/x-ui}"
+    xui_folder="${XUI_MAIN_FOLDER:=/usr/local/lx-ui}"
 fi
 xui_service="${XUI_SERVICE:=/etc/systemd/system}"
-log_folder="${XUI_LOG_FOLDER:=/var/log/x-ui}"
+log_folder="${XUI_LOG_FOLDER:=/var/log/lx-ui}"
 mkdir -p "${log_folder}"
 iplimit_log_path="${log_folder}/3xipl.log"
 iplimit_banned_log_path="${log_folder}/3xipl-banned.log"
@@ -129,7 +142,7 @@ before_show_menu() {
 }
 
 install() {
-    bash <(curl -Ls https://raw.githubusercontent.com/MHSanaei/3x-ui/main/install.sh)
+    bash <(curl -Ls ${LXUI_RAW_BASE}/main/install.sh)
     if [[ $? == 0 ]]; then
         if [[ $# == 0 ]]; then
             start
@@ -140,7 +153,7 @@ install() {
 }
 
 update() {
-    confirm "This function will update all x-ui components to the latest version, and the data will not be lost. Do you want to continue?" "y"
+    confirm "This function will update all lx-ui components to the latest version, and the data will not be lost. Do you want to continue?" "y"
     if [[ $? != 0 ]]; then
         LOGE "Cancelled"
         if [[ $# == 0 ]]; then
@@ -148,7 +161,7 @@ update() {
         fi
         return 0
     fi
-    bash <(curl -Ls https://raw.githubusercontent.com/MHSanaei/3x-ui/main/update.sh)
+    bash <(curl -Ls ${LXUI_RAW_BASE}/main/update.sh)
     if [[ $? == 0 ]]; then
         LOGI "Update is complete, Panel has automatically restarted "
         before_show_menu
@@ -156,7 +169,7 @@ update() {
 }
 
 update_dev() {
-    confirm "This will update x-ui to the latest DEV commit (the rolling 'dev-latest' build, not a stable release). Your data is preserved. Continue?" "y"
+    confirm "This will update lx-ui to the latest DEV commit (the rolling 'dev-latest' build, not a stable release). Your data is preserved. Continue?" "y"
     if [[ $? != 0 ]]; then
         LOGE "Cancelled"
         if [[ $# == 0 ]]; then
@@ -166,7 +179,7 @@ update_dev() {
     fi
     # XUI_UPDATE_TAG tells update.sh to install the dev-latest pre-release
     # instead of the latest stable tag.
-    XUI_UPDATE_TAG="dev-latest" bash <(curl -Ls https://raw.githubusercontent.com/MHSanaei/3x-ui/main/update.sh)
+    XUI_UPDATE_TAG="dev-latest" bash <(curl -Ls ${LXUI_RAW_BASE}/main/update.sh)
     if [[ $? == 0 ]]; then
         LOGI "Dev update is complete, Panel has automatically restarted "
         before_show_menu
@@ -176,11 +189,11 @@ update_dev() {
 replace_xui_script() {
     local url="$1"
     local use_if_modified_since="$2"
-    local temp_file="/usr/bin/x-ui-temp.$$"
+    local temp_file="/usr/bin/lx-ui-temp.$$"
 
     rm -f "$temp_file"
     if [[ "$use_if_modified_since" == "true" ]]; then
-        curl -fLRo "$temp_file" -z /usr/bin/x-ui "$url"
+        curl -fLRo "$temp_file" -z /usr/bin/lx-ui "$url"
     else
         curl -fLRo "$temp_file" "$url"
     fi
@@ -191,20 +204,20 @@ replace_xui_script() {
 
     if [[ ! -s "$temp_file" ]]; then
         rm -f "$temp_file"
-        # -z above means "not modified since /usr/bin/x-ui" rather than a
+        # -z above means "not modified since /usr/bin/lx-ui" rather than a
         # real failure, so an empty download here is success, not an error.
         [[ "$use_if_modified_since" == "true" ]] && return 0
         return 1
     fi
 
-    mv -f "$temp_file" /usr/bin/x-ui
+    mv -f "$temp_file" /usr/bin/lx-ui
     if [[ $? != 0 ]]; then
         rm -f "$temp_file"
         return 1
     fi
     # The move already landed the new script; a transient chmod failure here
     # shouldn't make callers think the whole replace failed.
-    chmod +x /usr/bin/x-ui
+    chmod +x /usr/bin/lx-ui
     return 0
 }
 
@@ -212,12 +225,12 @@ replace_xui_script() {
 # tag; fall back to main only when no script is published for the version.
 installed_script_url() {
     local ver
-    ver=$("${xui_folder}/x-ui" -v 2> /dev/null | tr -d '[:space:]')
-    if [[ "$ver" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] && curl -fsIL -o /dev/null "https://raw.githubusercontent.com/MHSanaei/3x-ui/v${ver}/x-ui.sh"; then
-        echo "https://raw.githubusercontent.com/MHSanaei/3x-ui/v${ver}/x-ui.sh"
+    ver=$("${xui_folder}/lx-ui" -v 2> /dev/null | tr -d '[:space:]')
+    if [[ "$ver" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] && curl -fsIL -o /dev/null "${LXUI_RAW_BASE}/v${ver}/lx-ui.sh"; then
+        echo "${LXUI_RAW_BASE}/v${ver}/lx-ui.sh"
     else
-        echo -e "${yellow}No x-ui.sh published for the installed version (${ver:-unknown}), using main${plain}" >&2
-        echo "https://raw.githubusercontent.com/MHSanaei/3x-ui/main/x-ui.sh"
+        echo -e "${yellow}No lx-ui.sh published for the installed version (${ver:-unknown}), using main${plain}" >&2
+        echo "${LXUI_RAW_BASE}/main/lx-ui.sh"
     fi
 }
 
@@ -233,7 +246,7 @@ update_menu() {
     fi
 
     if replace_xui_script "$(installed_script_url)" "false"; then
-        chmod +x ${xui_folder}/x-ui.sh
+        chmod +x ${xui_folder}/lx-ui.sh
         echo -e "${green}Update successful. The panel has automatically restarted.${plain}"
         exit 0
     else
@@ -251,7 +264,7 @@ legacy_version() {
         exit 1
     fi
     # Use the entered panel version in the download link
-    install_command="bash <(curl -Ls "https://raw.githubusercontent.com/mhsanaei/3x-ui/v$tag_version/install.sh") v$tag_version"
+    install_command="bash <(curl -Ls "${LXUI_RAW_BASE}/v$tag_version/install.sh") v$tag_version"
 
     echo "Downloading and installing panel version $tag_version..."
     eval $install_command
@@ -266,13 +279,13 @@ delete_script() {
 xui_env_file_path() {
     case "${release}" in
         ubuntu | debian | armbian)
-            echo "/etc/default/x-ui"
+            echo "/etc/default/lx-ui"
             ;;
         arch | manjaro | parch | alpine)
-            echo "/etc/conf.d/x-ui"
+            echo "/etc/conf.d/lx-ui"
             ;;
         *)
-            echo "/etc/sysconfig/x-ui"
+            echo "/etc/sysconfig/lx-ui"
             ;;
     esac
 }
@@ -287,19 +300,19 @@ uninstall() {
     fi
 
     if [[ $release == "alpine" ]]; then
-        rc-service x-ui stop
-        rc-update del x-ui
-        rm /etc/init.d/x-ui -f
+        rc-service lx-ui stop
+        rc-update del lx-ui
+        rm /etc/init.d/lx-ui -f
     else
-        systemctl stop x-ui
-        systemctl disable x-ui
-        rm ${xui_service}/x-ui.service -f
+        systemctl stop lx-ui
+        systemctl disable lx-ui
+        rm ${xui_service}/lx-ui.service -f
         # The sandbox drop-in generated by install.sh/update.sh lives beside the
-        # unit; leaving it behind would keep an empty x-ui.service.d around and
+        # unit; leaving it behind would keep an empty lx-ui.service.d around and
         # silently re-apply on a later install of another unit of the same name.
         # Local drop-ins the operator added go with it, which is what an
         # uninstall is expected to do.
-        rm -rf -- "${xui_service}/x-ui.service.d"
+        rm -rf -- "${xui_service}/lx-ui.service.d"
         systemctl daemon-reload
         systemctl reset-failed
     fi
@@ -311,7 +324,7 @@ uninstall() {
         panel_used_postgres="true"
     fi
 
-    rm /etc/x-ui/ -rf
+    rm /etc/lx-ui/ -rf
     rm ${xui_folder}/ -rf
     rm -f "$db_env_file"
 
@@ -322,7 +335,7 @@ uninstall() {
     echo ""
     echo -e "Uninstalled Successfully.\n"
     echo "If you need to install this panel again, you can use below command:"
-    echo -e "${green}bash <(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh)${plain}"
+    echo -e "${green}bash <(curl -Ls ${LXUI_RAW_BASE}/master/install.sh)${plain}"
     echo ""
     # Trap the SIGTERM signal
     trap delete_script SIGTERM
@@ -345,15 +358,15 @@ reset_user() {
 
     read -rp "Do you want to disable currently configured two-factor authentication? (y/n): " twoFactorConfirm
     if [[ $twoFactorConfirm != "y" && $twoFactorConfirm != "Y" ]]; then
-        ${xui_folder}/x-ui setting -username "${config_account}" -password "${config_password}" > /dev/null 2>&1
+        ${xui_folder}/lx-ui setting -username "${config_account}" -password "${config_password}" > /dev/null 2>&1
     else
-        ${xui_folder}/x-ui setting -username "${config_account}" -password "${config_password}" -resetTwoFactor=true > /dev/null 2>&1
+        ${xui_folder}/lx-ui setting -username "${config_account}" -password "${config_password}" -resetTwoFactor=true > /dev/null 2>&1
         echo -e "Two factor authentication has been disabled."
     fi
 
     echo -e "Panel login username has been reset to: ${green} ${config_account} ${plain}"
     echo -e "Panel login password has been reset to: ${green} ${config_password} ${plain}"
-    echo -e "${green} Please use the new login username and password to access the X-UI panel. Also remember them! ${plain}"
+    echo -e "${green} Please use the new login username and password to access the Lx-ui panel. Also remember them! ${plain}"
     confirm_restart
 }
 
@@ -376,7 +389,7 @@ reset_webbasepath() {
     config_webBasePath=$(gen_random_string 18)
 
     # Apply the new web base path setting
-    ${xui_folder}/x-ui setting -webBasePath "${config_webBasePath}" > /dev/null 2>&1
+    ${xui_folder}/lx-ui setting -webBasePath "${config_webBasePath}" > /dev/null 2>&1
 
     echo -e "Web base path has been reset to: ${green}${config_webBasePath}${plain}"
     echo -e "${green}Please use the new web base path to access the panel.${plain}"
@@ -391,13 +404,13 @@ reset_config() {
         fi
         return 0
     fi
-    ${xui_folder}/x-ui setting -reset
+    ${xui_folder}/lx-ui setting -reset
     echo -e "All panel settings have been reset to default."
     restart
 }
 
 check_config() {
-    local info=$(${xui_folder}/x-ui setting -show true)
+    local info=$(${xui_folder}/lx-ui setting -show true)
     if [[ $? != 0 ]]; then
         LOGE "get current settings error, please check logs"
         show_menu
@@ -414,12 +427,12 @@ check_config() {
         dsn_safe="$(echo "$dsn" | sed -E 's|(://[^:/@]+:)[^@]+@|\1****@|')"
         echo -e "${green}Database: PostgreSQL — ${dsn_safe}${plain}"
     else
-        echo -e "${green}Database: SQLite (/etc/x-ui/x-ui.db)${plain}"
+        echo -e "${green}Database: SQLite (/etc/lx-ui/lx-ui.db)${plain}"
     fi
 
     local existing_webBasePath=$(echo "$info" | grep -Eo 'webBasePath: .+' | awk '{print $2}')
     local existing_port=$(echo "$info" | grep -Eo 'port: .+' | awk '{print $2}')
-    local existing_cert=$(${xui_folder}/x-ui setting -getCert true | grep 'cert:' | awk -F': ' '{print $2}' | tr -d '[:space:]')
+    local existing_cert=$(${xui_folder}/lx-ui setting -getCert true | grep 'cert:' | awk -F': ' '{print $2}' | tr -d '[:space:]')
     local URL_lists=(
         "https://api4.ipify.org"
         "https://ipv4.icanhazip.com"
@@ -503,7 +516,7 @@ set_port() {
         LOGD "Cancelled"
         before_show_menu
     else
-        ${xui_folder}/x-ui setting -port ${port}
+        ${xui_folder}/lx-ui setting -port ${port}
         echo -e "The port is set, Please restart the panel now, and use the new port ${green}${port}${plain} to access web panel"
         confirm_restart
     fi
@@ -525,14 +538,14 @@ start() {
             return 0
         fi
         if [[ $release == "alpine" ]]; then
-            rc-service x-ui start
+            rc-service lx-ui start
         else
-            systemctl start x-ui
+            systemctl start lx-ui
         fi
         sleep 2
         check_status
         if [[ $? == 0 ]]; then
-            LOGI "x-ui Started Successfully"
+            LOGI "lx-ui Started Successfully"
         else
             LOGE "panel Failed to start, Probably because it takes longer than two seconds to start, Please check the log information later"
         fi
@@ -559,14 +572,14 @@ stop() {
             return 0
         fi
         if [[ $release == "alpine" ]]; then
-            rc-service x-ui stop
+            rc-service lx-ui stop
         else
-            systemctl stop x-ui
+            systemctl stop lx-ui
         fi
         sleep 2
         check_status
         if [[ $? == 1 ]]; then
-            LOGI "x-ui and xray stopped successfully"
+            LOGI "lx-ui and xray stopped successfully"
         else
             LOGE "Panel stop failed, Probably because the stop time exceeds two seconds, Please check the log information later"
         fi
@@ -589,7 +602,7 @@ restart() {
         sleep 2
         check_status
         if [[ $? == 0 ]]; then
-            LOGI "x-ui and xray Restarted successfully"
+            LOGI "lx-ui and xray Restarted successfully"
         else
             LOGE "Panel restart failed, Please check the log information later"
         fi
@@ -599,14 +612,14 @@ restart() {
         return 0
     fi
     if [[ $release == "alpine" ]]; then
-        rc-service x-ui restart
+        rc-service lx-ui restart
     else
-        systemctl restart x-ui
+        systemctl restart lx-ui
     fi
     sleep 2
     check_status
     if [[ $? == 0 ]]; then
-        LOGI "x-ui and xray Restarted successfully"
+        LOGI "lx-ui and xray Restarted successfully"
     else
         LOGE "Panel restart failed, Probably because it takes longer than two seconds to start, Please check the log information later"
     fi
@@ -630,9 +643,9 @@ restart_xray() {
         return 0
     fi
     if [[ $release == "alpine" ]]; then
-        rc-service x-ui reload
+        rc-service lx-ui reload
     else
-        systemctl reload x-ui
+        systemctl reload lx-ui
     fi
     LOGI "xray-core Restart signal sent successfully, Please check the log information to confirm whether xray restarted successfully"
     sleep 2
@@ -651,9 +664,9 @@ status() {
         return 0
     fi
     if [[ $release == "alpine" ]]; then
-        rc-service x-ui status
+        rc-service lx-ui status
     else
-        systemctl status x-ui -l
+        systemctl status lx-ui -l
     fi
     if [[ $# == 0 ]]; then
         before_show_menu
@@ -670,14 +683,14 @@ enable() {
         return 0
     fi
     if [[ $release == "alpine" ]]; then
-        rc-update add x-ui default
+        rc-update add lx-ui default
     else
-        systemctl enable x-ui
+        systemctl enable lx-ui
     fi
     if [[ $? == 0 ]]; then
-        LOGI "x-ui Set to boot automatically on startup successfully"
+        LOGI "lx-ui Set to boot automatically on startup successfully"
     else
-        LOGE "x-ui Failed to set Autostart"
+        LOGE "lx-ui Failed to set Autostart"
     fi
 
     if [[ $# == 0 ]]; then
@@ -695,14 +708,14 @@ disable() {
         return 0
     fi
     if [[ $release == "alpine" ]]; then
-        rc-update del x-ui
+        rc-update del lx-ui
     else
-        systemctl disable x-ui
+        systemctl disable lx-ui
     fi
     if [[ $? == 0 ]]; then
-        LOGI "x-ui Autostart Cancelled successfully"
+        LOGI "lx-ui Autostart Cancelled successfully"
     else
-        LOGE "x-ui Failed to cancel autostart"
+        LOGE "lx-ui Failed to cancel autostart"
     fi
 
     if [[ $# == 0 ]]; then
@@ -721,7 +734,7 @@ show_log() {
                 show_menu
                 ;;
             1)
-                grep -F 'x-ui[' /var/log/messages
+                grep -F 'lx-ui[' /var/log/messages
                 if [[ $# == 0 ]]; then
                     before_show_menu
                 fi
@@ -742,7 +755,7 @@ show_log() {
                 show_menu
                 ;;
             1)
-                journalctl -u x-ui -e --no-pager -f -p debug
+                journalctl -u lx-ui -e --no-pager -f -p debug
                 if [[ $# == 0 ]]; then
                     before_show_menu
                 fi
@@ -792,14 +805,14 @@ disable_bbr() {
         before_show_menu
     fi
 
-    if [ -f "/etc/sysctl.d/99-bbr-x-ui.conf" ]; then
-        old_settings=$(head -1 /etc/sysctl.d/99-bbr-x-ui.conf | tr -d '#')
+    if [ -f "/etc/sysctl.d/99-bbr-lx-ui.conf" ]; then
+        old_settings=$(head -1 /etc/sysctl.d/99-bbr-lx-ui.conf | tr -d '#')
         # sysctl -w already restores the live values, so no `sysctl --system`
         # afterwards — it would re-apply every sysctl file on the host and
         # surface unrelated errors from the distro's own defaults (see issue #5160)
         sysctl -w net.core.default_qdisc="${old_settings%:*}"
         sysctl -w net.ipv4.tcp_congestion_control="${old_settings#*:}"
-        rm /etc/sysctl.d/99-bbr-x-ui.conf
+        rm /etc/sysctl.d/99-bbr-lx-ui.conf
     else
         # Replace BBR with CUBIC configurations
         if [ -f "/etc/sysctl.conf" ]; then
@@ -828,7 +841,7 @@ enable_bbr() {
             echo "#$(sysctl -n net.core.default_qdisc):$(sysctl -n net.ipv4.tcp_congestion_control)"
             echo "net.core.default_qdisc = fq"
             echo "net.ipv4.tcp_congestion_control = bbr"
-        } > "/etc/sysctl.d/99-bbr-x-ui.conf"
+        } > "/etc/sysctl.d/99-bbr-lx-ui.conf"
         if [ -f "/etc/sysctl.conf" ]; then
             # Backup old settings from sysctl.conf, if any
             sed -i 's/^net.core.default_qdisc/# &/' /etc/sysctl.conf
@@ -837,7 +850,7 @@ enable_bbr() {
         # Apply only our config file; `sysctl --system` would re-apply every
         # sysctl file on the host and surface unrelated errors from the distro's
         # own defaults (see issue #5160)
-        sysctl -p /etc/sysctl.d/99-bbr-x-ui.conf
+        sysctl -p /etc/sysctl.d/99-bbr-lx-ui.conf
     else
         sed -i '/net.core.default_qdisc/d' /etc/sysctl.conf
         sed -i '/net.ipv4.tcp_congestion_control/d' /etc/sysctl.conf
@@ -866,7 +879,7 @@ update_shell() {
 }
 
 xui_pid() {
-    ps -ef 2> /dev/null | grep -F "${xui_folder}/x-ui" | grep -v grep | awk 'NR==1 {print $1}'
+    ps -ef 2> /dev/null | grep -F "${xui_folder}/lx-ui" | grep -v grep | awk 'NR==1 {print $1}'
 }
 
 signal_xui() {
@@ -881,7 +894,7 @@ signal_xui() {
 # 0: running, 1: not running, 2: not installed
 check_status() {
     if [[ "${running_in_docker}" == "true" ]]; then
-        if [[ ! -x "${xui_folder}/x-ui" ]]; then
+        if [[ ! -x "${xui_folder}/lx-ui" ]]; then
             return 2
         fi
         if [[ -n "$(xui_pid)" ]]; then
@@ -891,19 +904,19 @@ check_status() {
         fi
     fi
     if [[ $release == "alpine" ]]; then
-        if [[ ! -f /etc/init.d/x-ui ]]; then
+        if [[ ! -f /etc/init.d/lx-ui ]]; then
             return 2
         fi
-        if [[ $(rc-service x-ui status | grep -F 'status: started' -c) == 1 ]]; then
+        if [[ $(rc-service lx-ui status | grep -F 'status: started' -c) == 1 ]]; then
             return 0
         else
             return 1
         fi
     else
-        if [[ ! -f ${xui_service}/x-ui.service ]]; then
+        if [[ ! -f ${xui_service}/lx-ui.service ]]; then
             return 2
         fi
-        temp=$(systemctl show --property=SubState x-ui)
+        temp=$(systemctl show --property=SubState lx-ui)
         temp=${temp#SubState=}
         if [[ "${temp}" == "running" ]]; then
             return 0
@@ -915,13 +928,13 @@ check_status() {
 
 check_enabled() {
     if [[ $release == "alpine" ]]; then
-        if [[ $(rc-update show | grep -F 'x-ui' | grep default -c) == 1 ]]; then
+        if [[ $(rc-update show | grep -F 'lx-ui' | grep default -c) == 1 ]]; then
             return 0
         else
             return 1
         fi
     else
-        temp=$(systemctl is-enabled x-ui)
+        temp=$(systemctl is-enabled lx-ui)
         if [[ "${temp}" == "enabled" ]]; then
             return 0
         else
@@ -1406,9 +1419,9 @@ ssl_cert_issue_main() {
 
                     # If the panel currently serves this domain's cert, clear the stored paths
                     # so it stops loading the now-deleted files, then restart.
-                    local existing_cert=$(${xui_folder}/x-ui setting -getCert true | grep 'cert:' | awk -F': ' '{print $2}' | tr -d '[:space:]')
+                    local existing_cert=$(${xui_folder}/lx-ui setting -getCert true | grep 'cert:' | awk -F': ' '{print $2}' | tr -d '[:space:]')
                     if [[ "${existing_cert}" == "/root/cert/${domain}/"* ]]; then
-                        ${xui_folder}/x-ui cert -reset
+                        ${xui_folder}/lx-ui cert -reset
                         LOGI "Cleared panel certificate paths referencing ${domain}; restarting panel."
                         restart
                     fi
@@ -1455,7 +1468,7 @@ ssl_cert_issue_main() {
             fi
             # The panel's configured certificate may live outside /root/cert
             # (e.g. certbot under /etc/letsencrypt) — show it too (#5070).
-            local panel_cert=$(${xui_folder}/x-ui setting -getCert true | grep 'cert:' | awk -F': ' '{print $2}' | tr -d '[:space:]')
+            local panel_cert=$(${xui_folder}/lx-ui setting -getCert true | grep 'cert:' | awk -F': ' '{print $2}' | tr -d '[:space:]')
             if [[ -n "${panel_cert}" && "${panel_cert}" != /root/cert/* ]]; then
                 echo -e "Panel certificate (custom path): ${panel_cert}"
                 if [[ -f "${panel_cert}" ]] && command -v openssl > /dev/null 2>&1; then
@@ -1474,7 +1487,7 @@ ssl_cert_issue_main() {
                 read -rp "Certificate file path (fullchain): " webCertFile
                 read -rp "Private key file path: " webKeyFile
                 if [[ -f "${webCertFile}" && -f "${webKeyFile}" ]]; then
-                    ${xui_folder}/x-ui cert -webCert "$webCertFile" -webCertKey "$webKeyFile"
+                    ${xui_folder}/lx-ui cert -webCert "$webCertFile" -webCertKey "$webKeyFile"
                     echo "Panel certificate paths set:"
                     echo "  - Certificate File: $webCertFile"
                     echo "  - Private Key File: $webKeyFile"
@@ -1498,7 +1511,7 @@ ssl_cert_issue_main() {
                     local webKeyFile="/root/cert/${domain}/privkey.pem"
 
                     if [[ -f "${webCertFile}" && -f "${webKeyFile}" ]]; then
-                        ${xui_folder}/x-ui cert -webCert "$webCertFile" -webCertKey "$webKeyFile"
+                        ${xui_folder}/lx-ui cert -webCert "$webCertFile" -webCertKey "$webKeyFile"
                         echo "Panel paths set for domain: $domain"
                         echo "  - Certificate File: $webCertFile"
                         echo "  - Private Key File: $webKeyFile"
@@ -1509,7 +1522,7 @@ ssl_cert_issue_main() {
                             ~/.acme.sh/acme.sh --installcert --force -d "${domain}" \
                                 --key-file "${webKeyFile}" \
                                 --fullchain-file "${webCertFile}" \
-                                --reloadcmd "x-ui restart" 2>&1 || true
+                                --reloadcmd "lx-ui restart" 2>&1 || true
                             echo "Registered acme.sh auto-renewal hook for ${domain}."
                         fi
                         restart
@@ -1545,8 +1558,8 @@ ssl_cert_issue_for_ip() {
     LOGI "Starting automatic SSL certificate generation for server IP..."
     LOGI "Using Let's Encrypt shortlived profile (~6 days validity, auto-renews)"
 
-    local existing_webBasePath=$(${xui_folder}/x-ui setting -show true | grep -Eo 'webBasePath: .+' | awk '{print $2}')
-    local existing_port=$(${xui_folder}/x-ui setting -show true | grep -Eo 'port: .+' | awk '{print $2}')
+    local existing_webBasePath=$(${xui_folder}/lx-ui setting -show true | grep -Eo 'webBasePath: .+' | awk '{print $2}')
+    local existing_port=$(${xui_folder}/lx-ui setting -show true | grep -Eo 'port: .+' | awk '{print $2}')
 
     # Get server IP
     local URL_lists=(
@@ -1680,7 +1693,7 @@ ssl_cert_issue_for_ip() {
     done
 
     # Reload command - restarts panel after renewal
-    local reloadCmd="systemctl restart x-ui 2>/dev/null || rc-service x-ui restart 2>/dev/null"
+    local reloadCmd="systemctl restart lx-ui 2>/dev/null || rc-service lx-ui restart 2>/dev/null"
 
     # issue the certificate for IP with shortlived profile
     ~/.acme.sh/acme.sh --set-default-ca --server letsencrypt --force
@@ -1737,7 +1750,7 @@ ssl_cert_issue_for_ip() {
     read -rp "Would you like to set this certificate for the panel? (y/n): " setPanel
     if [[ "$setPanel" == "y" || "$setPanel" == "Y" ]]; then
         if [[ -f "$webCertFile" && -f "$webKeyFile" ]]; then
-            ${xui_folder}/x-ui cert -webCert "$webCertFile" -webCertKey "$webKeyFile"
+            ${xui_folder}/lx-ui cert -webCert "$webCertFile" -webCertKey "$webKeyFile"
             LOGI "Panel paths set for IP: $server_ip"
             LOGI "  - Certificate File: $webCertFile"
             LOGI "  - Private Key File: $webKeyFile"
@@ -1757,8 +1770,8 @@ ssl_cert_issue_for_ip() {
 }
 
 ssl_cert_issue() {
-    local existing_webBasePath=$(${xui_folder}/x-ui setting -show true | grep -Eo 'webBasePath: .+' | awk '{print $2}')
-    local existing_port=$(${xui_folder}/x-ui setting -show true | grep -Eo 'port: .+' | awk '{print $2}')
+    local existing_webBasePath=$(${xui_folder}/lx-ui setting -show true | grep -Eo 'webBasePath: .+' | awk '{print $2}')
+    local existing_port=$(${xui_folder}/lx-ui setting -show true | grep -Eo 'port: .+' | awk '{print $2}')
     # check for acme.sh first
     if ! command -v ~/.acme.sh/acme.sh &> /dev/null; then
         echo "acme.sh could not be found. we will install it"
@@ -1887,24 +1900,24 @@ ssl_cert_issue() {
         LOGI "Using existing certificate, installing certificates..."
     fi
 
-    reloadCmd="x-ui restart"
+    reloadCmd="lx-ui restart"
 
-    LOGI "Default --reloadcmd for ACME is: ${yellow}x-ui restart"
+    LOGI "Default --reloadcmd for ACME is: ${yellow}lx-ui restart"
     LOGI "This command will run on every certificate issue and renew."
     read -rp "Would you like to modify --reloadcmd for ACME? (y/n): " setReloadcmd
     if [[ "$setReloadcmd" == "y" || "$setReloadcmd" == "Y" ]]; then
-        echo -e "\n${green}\t1.${plain} Preset: systemctl reload nginx ; x-ui restart"
+        echo -e "\n${green}\t1.${plain} Preset: systemctl reload nginx ; lx-ui restart"
         echo -e "${green}\t2.${plain} Input your own command"
         echo -e "${green}\t0.${plain} Keep default reloadcmd"
         read -rp "Choose an option: " choice
         case "$choice" in
             1)
-                LOGI "Reloadcmd is: systemctl reload nginx ; x-ui restart"
-                reloadCmd="systemctl reload nginx ; x-ui restart"
+                LOGI "Reloadcmd is: systemctl reload nginx ; lx-ui restart"
+                reloadCmd="systemctl reload nginx ; lx-ui restart"
                 ;;
             2)
-                LOGD "It's recommended to put x-ui restart at the end, so it won't raise an error if other services fails"
-                read -rp "Please enter your reloadcmd (example: systemctl reload nginx ; x-ui restart): " reloadCmd
+                LOGD "It's recommended to put lx-ui restart at the end, so it won't raise an error if other services fails"
+                read -rp "Please enter your reloadcmd (example: systemctl reload nginx ; lx-ui restart): " reloadCmd
                 LOGI "Your reloadcmd is: ${reloadCmd}"
                 ;;
             *)
@@ -1958,7 +1971,7 @@ ssl_cert_issue() {
         local webKeyFile="/root/cert/${domain}/privkey.pem"
 
         if [[ -f "$webCertFile" && -f "$webKeyFile" ]]; then
-            ${xui_folder}/x-ui cert -webCert "$webCertFile" -webCertKey "$webKeyFile"
+            ${xui_folder}/lx-ui cert -webCert "$webCertFile" -webCertKey "$webKeyFile"
             LOGI "Panel paths set for domain: $domain"
             LOGI "  - Certificate File: $webCertFile"
             LOGI "  - Private Key File: $webKeyFile"
@@ -1973,8 +1986,8 @@ ssl_cert_issue() {
 }
 
 ssl_cert_issue_CF() {
-    local existing_webBasePath=$(${xui_folder}/x-ui setting -show true | grep -Eo 'webBasePath: .+' | awk '{print $2}')
-    local existing_port=$(${xui_folder}/x-ui setting -show true | grep -Eo 'port: .+' | awk '{print $2}')
+    local existing_webBasePath=$(${xui_folder}/lx-ui setting -show true | grep -Eo 'webBasePath: .+' | awk '{print $2}')
+    local existing_port=$(${xui_folder}/lx-ui setting -show true | grep -Eo 'port: .+' | awk '{print $2}')
     LOGI "****** Instructions for Use ******"
     LOGI "Follow the steps below to complete the process:"
     LOGI "1. A Cloudflare API Token (recommended, scoped to Zone:DNS:Edit) or the Global API Key + registered email."
@@ -2052,24 +2065,24 @@ ssl_cert_issue_CF() {
             exit 1
         fi
 
-        reloadCmd="x-ui restart"
+        reloadCmd="lx-ui restart"
 
-        LOGI "Default --reloadcmd for ACME is: ${yellow}x-ui restart"
+        LOGI "Default --reloadcmd for ACME is: ${yellow}lx-ui restart"
         LOGI "This command will run on every certificate issue and renew."
         read -rp "Would you like to modify --reloadcmd for ACME? (y/n): " setReloadcmd
         if [[ "$setReloadcmd" == "y" || "$setReloadcmd" == "Y" ]]; then
-            echo -e "\n${green}\t1.${plain} Preset: systemctl reload nginx ; x-ui restart"
+            echo -e "\n${green}\t1.${plain} Preset: systemctl reload nginx ; lx-ui restart"
             echo -e "${green}\t2.${plain} Input your own command"
             echo -e "${green}\t0.${plain} Keep default reloadcmd"
             read -rp "Choose an option: " choice
             case "$choice" in
                 1)
-                    LOGI "Reloadcmd is: systemctl reload nginx ; x-ui restart"
-                    reloadCmd="systemctl reload nginx ; x-ui restart"
+                    LOGI "Reloadcmd is: systemctl reload nginx ; lx-ui restart"
+                    reloadCmd="systemctl reload nginx ; lx-ui restart"
                     ;;
                 2)
-                    LOGD "It's recommended to put x-ui restart at the end, so it won't raise an error if other services fails"
-                    read -rp "Please enter your reloadcmd (example: systemctl reload nginx ; x-ui restart): " reloadCmd
+                    LOGD "It's recommended to put lx-ui restart at the end, so it won't raise an error if other services fails"
+                    read -rp "Please enter your reloadcmd (example: systemctl reload nginx ; lx-ui restart): " reloadCmd
                     LOGI "Your reloadcmd is: ${reloadCmd}"
                     ;;
                 *)
@@ -2107,7 +2120,7 @@ ssl_cert_issue_CF() {
             local webKeyFile="${certPath}/privkey.pem"
 
             if [[ -f "$webCertFile" && -f "$webKeyFile" ]]; then
-                ${xui_folder}/x-ui cert -webCert "$webCertFile" -webCertKey "$webKeyFile"
+                ${xui_folder}/lx-ui cert -webCert "$webCertFile" -webCertKey "$webKeyFile"
                 LOGI "Panel paths set for domain: $CF_Domain"
                 LOGI "  - Certificate File: $webCertFile"
                 LOGI "  - Private Key File: $webKeyFile"
@@ -2403,7 +2416,7 @@ setup_fail2ban_iplimit() {
 
 # install_iplimit is the interactive (menu) entry point: it runs the shared
 # setup and then returns to the menu. The non-interactive installer path uses
-# setup_fail2ban_iplimit directly via `x-ui setup-fail2ban`.
+# setup_fail2ban_iplimit directly via `lx-ui setup-fail2ban`.
 install_iplimit() {
     setup_fail2ban_iplimit
     before_show_menu
@@ -2559,7 +2572,7 @@ EOF
     ssh_ports=$(grep -oP '^[[:space:]]*Port[[:space:]]+\K[0-9]+' /etc/ssh/sshd_config 2>/dev/null | paste -sd, -)
     [[ -z "${ssh_ports}" ]] && ssh_ports="22"
     local panel_port
-    panel_port=$(${xui_folder}/x-ui setting -show true 2>/dev/null | grep -Eo 'port: .+' | awk '{print $2}')
+    panel_port=$(${xui_folder}/lx-ui setting -show true 2>/dev/null | grep -Eo 'port: .+' | awk '{print $2}')
     local exempt_ports="${ssh_ports}"
     [[ -n "${panel_port}" ]] && exempt_ports="${exempt_ports},${panel_port}"
 
@@ -2642,11 +2655,11 @@ SSH_port_forwarding() {
         done
     fi
 
-    local existing_webBasePath=$(${xui_folder}/x-ui setting -show true | grep -Eo 'webBasePath: .+' | awk '{print $2}')
-    local existing_port=$(${xui_folder}/x-ui setting -show true | grep -Eo 'port: .+' | awk '{print $2}')
-    local existing_listenIP=$(${xui_folder}/x-ui setting -getListen true | grep -Eo 'listenIP: .+' | awk '{print $2}')
-    local existing_cert=$(${xui_folder}/x-ui setting -getCert true | grep -Eo 'cert: .+' | awk '{print $2}')
-    local existing_key=$(${xui_folder}/x-ui setting -getCert true | grep -Eo 'key: .+' | awk '{print $2}')
+    local existing_webBasePath=$(${xui_folder}/lx-ui setting -show true | grep -Eo 'webBasePath: .+' | awk '{print $2}')
+    local existing_port=$(${xui_folder}/lx-ui setting -show true | grep -Eo 'port: .+' | awk '{print $2}')
+    local existing_listenIP=$(${xui_folder}/lx-ui setting -getListen true | grep -Eo 'listenIP: .+' | awk '{print $2}')
+    local existing_cert=$(${xui_folder}/lx-ui setting -getCert true | grep -Eo 'cert: .+' | awk '{print $2}')
+    local existing_key=$(${xui_folder}/lx-ui setting -getCert true | grep -Eo 'key: .+' | awk '{print $2}')
 
     local config_listenIP=""
     local listen_choice=""
@@ -2687,7 +2700,7 @@ SSH_port_forwarding() {
                 config_listenIP="127.0.0.1"
                 [[ "$listen_choice" == "2" ]] && read -rp "Enter custom IP to listen on: " config_listenIP
 
-                ${xui_folder}/x-ui setting -listenIP "${config_listenIP}" > /dev/null 2>&1
+                ${xui_folder}/lx-ui setting -listenIP "${config_listenIP}" > /dev/null 2>&1
                 echo -e "${green}listen IP has been set to ${config_listenIP}.${plain}"
                 echo -e "\n${green}SSH Port Forwarding Configuration:${plain}"
                 echo -e "Standard SSH command:"
@@ -2703,7 +2716,7 @@ SSH_port_forwarding() {
             fi
             ;;
         2)
-            ${xui_folder}/x-ui setting -listenIP 0.0.0.0 > /dev/null 2>&1
+            ${xui_folder}/lx-ui setting -listenIP 0.0.0.0 > /dev/null 2>&1
             echo -e "${green}Listen IP has been cleared.${plain}"
             restart
             ;;
@@ -2913,7 +2926,7 @@ pg_ensure_hba_password_auth() {
     local tmp
     tmp=$(mktemp) || return 1
     {
-        echo "# Added by 3x-ui: allow password logins for the panel database."
+        echo "# Added by lx-ui: allow password logins for the panel database."
         echo "host    ${pg_db}    all    127.0.0.1/32    md5"
         echo "host    ${pg_db}    all    ::1/128         md5"
         cat "${hba_file}"
@@ -3129,7 +3142,7 @@ pg_client_major() {
 # major version is at least $1 (e.g. 17); with no argument any installed version
 # is accepted. Falls back to the official PostgreSQL package repository when the
 # distribution one is too old. Restoring a panel backup made by a newer pg_dump
-# needs this:   x-ui pgclient <major>
+# needs this:   lx-ui pgclient <major>
 pg_upgrade_client() {
     local want="$1" have
     if [[ -n "$want" && ! "$want" =~ ^[0-9]+$ ]]; then
@@ -3253,8 +3266,8 @@ pg_install_server_action() {
 
 # Copies the current SQLite data into PostgreSQL, then switches the panel over.
 migrate_to_postgres() {
-    if [[ ! -x "${xui_folder}/x-ui" ]]; then
-        LOGE "x-ui is not installed."
+    if [[ ! -x "${xui_folder}/lx-ui" ]]; then
+        LOGE "lx-ui is not installed."
         return 1
     fi
     echo ""
@@ -3299,7 +3312,7 @@ migrate_to_postgres() {
 
     echo ""
     LOGI "Migrating data into PostgreSQL..."
-    if ! ${xui_folder}/x-ui migrate-db --dsn "$dsn"; then
+    if ! ${xui_folder}/lx-ui migrate-db --dsn "$dsn"; then
         LOGE "Migration failed. The panel was NOT switched to PostgreSQL."
         start 0 > /dev/null 2>&1
         return 1
@@ -3383,30 +3396,30 @@ postgresql_menu() {
 }
 
 # Convert between the panel's SQLite database and a portable .dump (SQL text)
-# file using the bundled x-ui binary. With no arguments it dumps the installed
+# file using the bundled lx-ui binary. With no arguments it dumps the installed
 # panel database; an optional second argument overrides the output path.
-#   x-ui migrateDB [file.db|file.dump] [output]
+#   lx-ui migrateDB [file.db|file.dump] [output]
 migrate_db() {
     local input="$1" output="$2"
-    local default_db="/etc/x-ui/x-ui.db"
-    local bin="${xui_folder}/x-ui"
+    local default_db="/etc/lx-ui/lx-ui.db"
+    local bin="${xui_folder}/lx-ui"
 
     [[ -z "$input" ]] && input="$default_db"
 
     if [[ ! -x "$bin" ]]; then
-        LOGE "x-ui binary not found at ${bin}. Is the panel installed?"
+        LOGE "lx-ui binary not found at ${bin}. Is the panel installed?"
         return 1
     fi
 
     if ! "$bin" migrate-db -h 2>&1 | grep -q -- '-dump'; then
-        LOGE "This x-ui build does not support .db <-> .dump conversion yet."
-        LOGE "Update the panel first (x-ui update) to a version with 'migrate-db --dump/--restore'."
+        LOGE "This lx-ui build does not support .db <-> .dump conversion yet."
+        LOGE "Update the panel first (lx-ui update) to a version with 'migrate-db --dump/--restore'."
         return 1
     fi
 
     if [[ ! -f "$input" ]]; then
         LOGE "Input file not found: ${input}"
-        echo -e "Usage: ${green}x-ui migrateDB [file.db|file.dump] [output]${plain}"
+        echo -e "Usage: ${green}lx-ui migrateDB [file.db|file.dump] [output]${plain}"
         return 1
     fi
 
@@ -3443,8 +3456,8 @@ migrate_db() {
     else
         [[ -z "$output" ]] && output="${input%.*}.db"
         if [[ "$output" == "$default_db" ]] && check_status > /dev/null 2>&1; then
-            LOGE "Refusing to restore into the live database (${default_db}) while x-ui is running."
-            LOGE "Stop the panel first (x-ui stop) or choose a different output path."
+            LOGE "Refusing to restore into the live database (${default_db}) while lx-ui is running."
+            LOGE "Stop the panel first (lx-ui stop) or choose a different output path."
             return 1
         fi
         if [[ -f "$output" ]]; then
@@ -3466,7 +3479,7 @@ migrate_db() {
 # Interactive wrapper around migrate_db for the menu: prompts for the paths and
 # lets migrate_db auto-detect the direction.
 migrate_db_prompt() {
-    local default_db="/etc/x-ui/x-ui.db"
+    local default_db="/etc/lx-ui/lx-ui.db"
     local input output
     echo -e "Convert between a SQLite ${green}.db${plain} and a portable ${green}.dump${plain} (direction auto-detected)."
     read -rp "Input file [${default_db}]: " input
@@ -3477,34 +3490,34 @@ migrate_db_prompt() {
 
 show_usage() {
     echo -e "┌────────────────────────────────────────────────────────────────┐
-│  ${blue}x-ui control menu usages (subcommands):${plain}                       │
+│  ${blue}lx-ui control menu usages (subcommands):${plain}                       │
 │                                                                │
-│  ${blue}x-ui${plain}                       - Admin Management Script          │
-│  ${blue}x-ui start${plain}                 - Start                            │
-│  ${blue}x-ui stop${plain}                  - Stop                             │
-│  ${blue}x-ui restart${plain}               - Restart                          │
-|  ${blue}x-ui restart-xray${plain}          - Restart Xray                     │
-│  ${blue}x-ui status${plain}                - Current Status                   │
-│  ${blue}x-ui settings${plain}              - Current Settings                 │
-│  ${blue}x-ui enable${plain}                - Enable Autostart on OS Startup   │
-│  ${blue}x-ui disable${plain}               - Disable Autostart on OS Startup  │
-│  ${blue}x-ui log${plain}                   - Check logs                       │
-│  ${blue}x-ui banlog${plain}                - Check Fail2ban ban logs          │
-│  ${blue}x-ui update${plain}                - Update                           │
-│  ${blue}x-ui update-dev${plain}            - Update to Dev channel (latest)   │
-│  ${blue}x-ui update-all-geofiles${plain}   - Update all geo files             │
-│  ${blue}x-ui migrateDB [file]${plain}      - Convert .db <-> .dump (SQLite)   │
-│  ${blue}x-ui pgclient [ver]${plain}        - Upgrade pg_dump/pg_restore tools │
-│  ${blue}x-ui legacy${plain}                - Legacy version                   │
-│  ${blue}x-ui install${plain}               - Install                          │
-│  ${blue}x-ui uninstall${plain}             - Uninstall                        │
+│  ${blue}lx-ui${plain}                       - Admin Management Script          │
+│  ${blue}lx-ui start${plain}                 - Start                            │
+│  ${blue}lx-ui stop${plain}                  - Stop                             │
+│  ${blue}lx-ui restart${plain}               - Restart                          │
+|  ${blue}lx-ui restart-xray${plain}          - Restart Xray                     │
+│  ${blue}lx-ui status${plain}                - Current Status                   │
+│  ${blue}lx-ui settings${plain}              - Current Settings                 │
+│  ${blue}lx-ui enable${plain}                - Enable Autostart on OS Startup   │
+│  ${blue}lx-ui disable${plain}               - Disable Autostart on OS Startup  │
+│  ${blue}lx-ui log${plain}                   - Check logs                       │
+│  ${blue}lx-ui banlog${plain}                - Check Fail2ban ban logs          │
+│  ${blue}lx-ui update${plain}                - Update                           │
+│  ${blue}lx-ui update-dev${plain}            - Update to Dev channel (latest)   │
+│  ${blue}lx-ui update-all-geofiles${plain}   - Update all geo files             │
+│  ${blue}lx-ui migrateDB [file]${plain}      - Convert .db <-> .dump (SQLite)   │
+│  ${blue}lx-ui pgclient [ver]${plain}        - Upgrade pg_dump/pg_restore tools │
+│  ${blue}lx-ui legacy${plain}                - Legacy version                   │
+│  ${blue}lx-ui install${plain}               - Install                          │
+│  ${blue}lx-ui uninstall${plain}             - Uninstall                        │
 └────────────────────────────────────────────────────────────────┘"
 }
 
 show_menu() {
     echo -e "
 ╔────────────────────────────────────────────────╗
-│  ${green}3X-UI Panel Management Script${plain}                │
+│  ${green}Lx-ui Panel Management Script${plain}                │
 │  ${green}0.${plain} Exit Script                               │
 │────────────────────────────────────────────────│
 │  ${green}1.${plain} Install                                   │

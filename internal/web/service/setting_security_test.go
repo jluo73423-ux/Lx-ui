@@ -53,7 +53,7 @@ func TestResetSettingsRegeneratesSubscriptionPaths(t *testing.T) {
 
 func setupSettingTestDB(t *testing.T) {
 	t.Helper()
-	dbtest.InitDB(t, filepath.Join(t.TempDir(), "x-ui.db"))
+	dbtest.InitDB(t, filepath.Join(t.TempDir(), "lx-ui.db"))
 }
 
 func TestGetAllSettingViewRedactsSecrets(t *testing.T) {

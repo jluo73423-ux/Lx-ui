@@ -8,14 +8,14 @@
       "args": [
         "build",
         "-o",
-        "bin/3x-ui",
+        "bin/lx-ui",
         "./main.go"
       ],
       "windows": {
         "args": [
           "build",
           "-o",
-          "bin/3x-ui.exe",
+          "bin/lx-ui.exe",
           "./main.go"
         ]
       },

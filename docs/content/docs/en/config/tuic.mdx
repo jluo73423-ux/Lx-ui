@@ -1,6 +1,6 @@
 ---
 title: TUIC
-description: Set up a TUIC inbound in 3x-ui — QUIC congestion control, 0-RTT handshakes, and multi-user authentication.
+description: Set up a TUIC inbound in lx-ui — QUIC congestion control, 0-RTT handshakes, and multi-user authentication.
 icon: Zap
 ---
 
@@ -10,7 +10,7 @@ and custom congestion control algorithms to maintain stable connections over los
 unstable networks.
 
 <Callout type="info">
-  TUIC runs as an **in-process native Go server** inside 3x-ui. Decrypted traffic is bridged into Xray-core via a loopback SOCKS5 tunnel, enabling full Xray routing rules, cascading outbounds (e.g. TUIC → VLESS / WARP), per-client traffic quotas (`totalGB`), and zero-downtime hot user updates without restarting the port.
+  TUIC runs as an **in-process native Go server** inside lx-ui. Decrypted traffic is bridged into Xray-core via a loopback SOCKS5 tunnel, enabling full Xray routing rules, cascading outbounds (e.g. TUIC → VLESS / WARP), per-client traffic quotas (`totalGB`), and zero-downtime hot user updates without restarting the port.
 </Callout>
 
 ## Key settings
@@ -76,7 +76,7 @@ The panel provides automatic YAML export for Clash/Mihomo in the client QR modal
 
 ```yaml title="clash-tuic.yaml"
 proxies:
-  - name: "3x-ui-tuic"
+  - name: "lx-ui-tuic"
     type: tuic
     server: vpn.example.com
     port: 8443
@@ -102,11 +102,11 @@ tuic://<uuid>:<password>@<host>:<port>?congestion_control=bbr&alpn=h3&sni=vpn.ex
 ## Architecture & Features
 
 <Callout type="info">
-  - **Native in-process Go engine**: TUIC v5 runs 100% natively in Go within the 3x-ui process. No external binaries or sidecars to download or maintain.
+  - **Native in-process Go engine**: TUIC v5 runs 100% natively in Go within the lx-ui process. No external binaries or sidecars to download or maintain.
   - **Full Xray routing & cascading**: Decrypted traffic passes directly through Xray's routing engine. Inbound tags (`in-<port>-udp`) work seamlessly with routing rules, domain/IP blocks, and cascading to any outbound proxy (VLESS, Shadowsocks, WARP, etc.).
   - **Per-client traffic limits & expiration**: Individual traffic quotas (`totalGB`) and expiration timestamps (`expiryTime`) are tracked and enforced for each client.
   - **Live speed & traffic totals**: Native TUIC client counters are sampled every 10 seconds and sent to the panel for per-client live speed. Xray meters inbound totals through the loopback relay; TUIC's client-speed event does not add inbound totals again.
-  - **UDP resource bounds**: Each QUIC connection can hold up to 256 active UDP associations. Idle associations are closed after five minutes. This is a per-connection limit, not a node-wide association cap. TUIC uses a reserved loopback SOCKS relay port in `64001–65000`; 3x-ui checks it against managed inbound and relay ports.
+  - **UDP resource bounds**: Each QUIC connection can hold up to 256 active UDP associations. Idle associations are closed after five minutes. This is a per-connection limit, not a node-wide association cap. TUIC uses a reserved loopback SOCKS relay port in `64001–65000`; lx-ui checks it against managed inbound and relay ports.
   - **Zero-downtime client updates**: Adding, modifying, or disabling clients updates the in-memory user registry instantly without restarting the UDP port or interrupting existing client sessions.
   - **Deployment**: A TUIC inbound can be created on, or cloned to, a sub-node. The node's own panel runs the TUIC server, so the node must run panel v3.8.0 or newer; the master refuses an older node.
 </Callout>
