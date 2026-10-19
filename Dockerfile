@@ -31,7 +31,7 @@ ENV CGO_CFLAGS="-D_LARGEFILE64_SOURCE"
 # building repository). Empty leaves the panel's self-update disabled with a
 # clear message instead of pointing at a placeholder.
 ARG LXUI_RELEASE_REPO=""
-RUN go build -ldflags "-w -s -X github.com/mhsanaei/3x-ui/v3/internal/config.releaseRepo=${LXUI_RELEASE_REPO}" -o build/lx-ui main.go
+RUN go build -ldflags "-w -s -X github.com/mhsanaei/3x-ui/v3/internal/config.releaseRepo=${LXUI_RELEASE_REPO}" -o build/lx-ui .
 RUN ./DockerInit.sh "$TARGETARCH"
 
 # ========================================================
