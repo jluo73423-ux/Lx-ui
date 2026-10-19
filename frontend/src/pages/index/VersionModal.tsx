@@ -14,6 +14,19 @@ interface BusyEvent {
   tip?: string;
 }
 
+type XrayVersionTier = 'recommended' | 'verified' | 'experimental';
+
+interface XrayVersionInfo {
+  version: string;
+  tier: XrayVersionTier;
+}
+
+const TIER_COLOR: Record<XrayVersionTier, string> = {
+  recommended: 'green',
+  verified: 'blue',
+  experimental: 'orange',
+};
+
 interface VersionModalProps {
   open: boolean;
   status: Status;
@@ -34,12 +47,12 @@ export default function VersionModal({ open, status, onClose, onBusy }: VersionM
   const { t } = useTranslation();
   const [modal, modalContextHolder] = Modal.useModal();
   const [activeKey, setActiveKey] = useState<string | string[]>('1');
-  const [versions, setVersions] = useState<string[]>([]);
+  const [versions, setVersions] = useState<XrayVersionInfo[]>([]);
   const [loading, setLoading] = useState(false);
 
   const fetchVersions = useCallback(async () => {
     try {
-      const msg = await HttpUtil.get<string[]>('/panel/api/server/getXrayVersion');
+      const msg = await HttpUtil.get<XrayVersionInfo[]>('/panel/api/server/getXrayVersionTiers');
       if (msg?.success) setVersions(msg.obj || []);
     } finally {
       setLoading(false);
@@ -121,9 +134,14 @@ export default function VersionModal({ open, status, onClose, onBusy }: VersionM
                     showIcon
                   />
                   <div className="version-list">
-                    {versions.map((version, index) => (
+                    {versions.map(({ version, tier }) => (
                       <div key={version} className="version-list-item">
-                        <Tag color={index % 2 === 0 ? 'purple' : 'green'}>{version}</Tag>
+                        <span>
+                          <Tag color="purple">{version}</Tag>
+                          <Tag color={TIER_COLOR[tier] ?? 'default'}>
+                            {t(`pages.index.xrayTier.${tier}`)}
+                          </Tag>
+                        </span>
                         <Radio
                           checked={version === `v${status?.xray?.version}`}
                           onClick={() => switchXrayVersion(version)}

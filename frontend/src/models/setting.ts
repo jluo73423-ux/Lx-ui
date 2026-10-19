@@ -67,6 +67,7 @@ export class AllSetting {
   nodeHeartbeatInterval = 5;
   nodeTrafficInterval = 5;
   nodeSyncJitter = 0;
+  xrayAllowExperimental = false;
   subCertFile = '';
   subKeyFile = '';
   externalSubUserAgent = 'v2rayNG/1.8.5';

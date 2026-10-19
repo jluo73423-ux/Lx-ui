@@ -12,6 +12,9 @@ export type ProcessState = z.infer<typeof ProcessStateSchema>;
 export const ProtocolSchema = z.string();
 export type Protocol = z.infer<typeof ProtocolSchema>;
 
+export const XrayVersionTierSchema = z.string();
+export type XrayVersionTier = z.infer<typeof XrayVersionTierSchema>;
+
 export const addrFamilySchema = z.number().int();
 export type addrFamily = z.infer<typeof addrFamilySchema>;
 
@@ -206,6 +209,7 @@ export const AllSettingSchema = z.object({
   webKeyFile: z.string(),
   webListen: z.string(),
   webPort: z.number().int().min(1).max(65535),
+  xrayAllowExperimental: z.boolean(),
 });
 export type AllSetting = z.infer<typeof AllSettingSchema>;
 
@@ -399,6 +403,7 @@ export const AllSettingViewSchema = z.object({
   webKeyFile: z.string(),
   webListen: z.string(),
   webPort: z.number().int().min(1).max(65535),
+  xrayAllowExperimental: z.boolean(),
 });
 export type AllSettingView = z.infer<typeof AllSettingViewSchema>;
 

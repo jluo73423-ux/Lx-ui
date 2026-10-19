@@ -150,6 +150,11 @@
       "xraySwitch": "版本",
       "xrayUpdates": "Xray 更新",
       "xraySwitchClickDesk": "请谨慎选择，因为较旧版本可能与当前配置不兼容",
+      "xrayTier": {
+        "recommended": "推荐",
+        "verified": "已验证",
+        "experimental": "实验性"
+      },
       "updatePanel": "更新面板",
       "panelUpdateDesc": "这将把 Lx-ui 更新到最新版本并重启面板服务。",
       "currentPanelVersion": "当前面板版本",
@@ -1331,6 +1336,8 @@
       "nodeTrafficIntervalDesc": "面板从每个节点拉取流量、在线用户和配置状态的频率（5-300 秒，默认 5）。节点很多时调大可降低主控 CPU 和带宽，但配额执行会相应变慢。重启面板后生效。",
       "nodeSyncJitter": "节点同步抖动（秒）",
       "nodeSyncJitterDesc": "给每次节点心跳和流量同步额外加的随机延迟（0-60 秒，不超过间隔），避免与其他定时任务撞在一起。0 表示关闭。重启面板后生效。",
+      "xrayAllowExperimental": "允许实验性 Xray 版本",
+      "xrayAllowExperimentalDesc": "同时列出并允许安装未在本面板版本上验证过的 Xray 版本（通常比推荐版本新）。每次安装仍会先校验，新内核无法启动时自动回滚。",
       "fragment": "分片",
       "fragmentDesc": "启用 TLS hello 数据包分片",
       "fragmentSett": "设置",

@@ -204,6 +204,7 @@ var defaultValueMap = map[string]string{
 	"nodeHeartbeatInterval":       "5",
 	"nodeTrafficInterval":         "5",
 	"nodeSyncJitter":              "0",
+	"xrayAllowExperimental":       "false",
 	"xrayOutboundTestUrl":         "https://www.google.com/generate_204",
 	"panelOutbound":               "",
 	"devChannelEnable":            "false",
@@ -1324,6 +1325,12 @@ func (s *SettingService) GetRestartXrayOnClientDisable() (bool, error) {
 
 func (s *SettingService) SetRestartXrayOnClientDisable(value bool) error {
 	return s.setBool("restartXrayOnClientDisable", value)
+}
+
+// GetXrayAllowExperimental reports whether the Xray version picker may list
+// and install versions outside the recommended/verified tiers.
+func (s *SettingService) GetXrayAllowExperimental() (bool, error) {
+	return s.getBool("xrayAllowExperimental")
 }
 
 // Node sync cadence bounds (#6541). The defaults match the historical

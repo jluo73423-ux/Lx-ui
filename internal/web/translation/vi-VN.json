@@ -150,6 +150,11 @@
       "xraySwitch": "Phiên bản",
       "xrayUpdates": "Cập nhật Xray",
       "xraySwitchClickDesk": "Hãy lựa chọn thận trọng, vì các phiên bản cũ có thể không tương thích với các cấu hình hiện tại.",
+      "xrayTier": {
+        "recommended": "Recommended",
+        "verified": "Verified",
+        "experimental": "Experimental"
+      },
       "updatePanel": "Cập nhật Panel",
       "panelUpdateDesc": "Điều này sẽ cập nhật Lx-ui lên bản phát hành mới nhất và khởi động lại dịch vụ panel.",
       "currentPanelVersion": "Phiên bản panel hiện tại",
@@ -1331,6 +1336,8 @@
       "nodeTrafficIntervalDesc": "How often the panel pulls traffic, online users and config state from each node (5-300 s, default 5). Raise it on large fleets to cut master CPU and bandwidth; quotas are enforced later accordingly. Applies after a panel restart.",
       "nodeSyncJitter": "Node Sync Jitter (s)",
       "nodeSyncJitterDesc": "Random extra delay (0-60 s, capped at the interval) added to each node heartbeat and traffic tick so polls don't line up with other periodic work. 0 disables it. Applies after a panel restart.",
+      "xrayAllowExperimental": "Allow Experimental Xray Versions",
+      "xrayAllowExperimentalDesc": "Also list and allow installing Xray releases that were not verified with this panel build (usually newer than the recommended one). Each install is still validated first and rolled back automatically if the new core cannot start.",
       "fragment": "Sự phân mảnh",
       "fragmentDesc": "Kích hoạt phân mảnh cho gói TLS hello",
       "fragmentSett": "Cài đặt phân mảnh",

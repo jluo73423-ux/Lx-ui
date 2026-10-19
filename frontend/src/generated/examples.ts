@@ -181,7 +181,8 @@ export const EXAMPLES: Record<string, unknown> = {
     "webDomain": "",
     "webKeyFile": "",
     "webListen": "",
-    "webPort": 1
+    "webPort": 1,
+    "xrayAllowExperimental": false
   },
   "AllSettingView": {
     "datepicker": "",
@@ -372,7 +373,8 @@ export const EXAMPLES: Record<string, unknown> = {
     "webDomain": "",
     "webKeyFile": "",
     "webListen": "",
-    "webPort": 1
+    "webPort": 1,
+    "xrayAllowExperimental": false
   },
   "AmneziaWGLogs": {
     "events": [

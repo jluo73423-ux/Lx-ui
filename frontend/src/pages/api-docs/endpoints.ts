@@ -543,8 +543,17 @@ export const sections: readonly Section[] = [
       {
         method: 'GET',
         path: '/panel/api/server/getXrayVersion',
-        summary: 'List Xray binary versions available for install on this host.',
-        response: '{\n  "success": true,\n  "obj": ["v25.10.31", "v25.9.15", "v25.8.1"]\n}',
+        summary:
+          'List Xray versions installable on this host under the version policy: the recommended (bundled) version, verified versions, and experimental ones only when xrayAllowExperimental is on.',
+        response: '{\n  "success": true,\n  "obj": ["v26.10.10", "v26.9.30", "v26.7.28"]\n}',
+      },
+      {
+        method: 'GET',
+        path: '/panel/api/server/getXrayVersionTiers',
+        summary:
+          'Same list as getXrayVersion, with each version tagged recommended, verified or experimental.',
+        response:
+          '{\n  "success": true,\n  "obj": [{ "version": "v26.10.10", "tier": "recommended" }, { "version": "v26.9.30", "tier": "verified" }]\n}',
       },
       {
         method: 'GET',

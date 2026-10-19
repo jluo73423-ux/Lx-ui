@@ -74,6 +74,7 @@ export const AllSettingSchema = z
     nodeHeartbeatInterval: z.number().int().min(5).max(300).optional(),
     nodeTrafficInterval: z.number().int().min(5).max(300).optional(),
     nodeSyncJitter: z.number().int().min(0).max(60).optional(),
+    xrayAllowExperimental: z.boolean().optional(),
     subCertFile: z.string().optional(),
     subKeyFile: z.string().optional(),
     externalSubUserAgent: z.string().max(512).optional(),

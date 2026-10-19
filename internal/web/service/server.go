@@ -912,24 +912,72 @@ func (s *ServerService) GetXrayVersions() ([]string, error) {
 
 	var versions []string
 	for _, release := range releases {
-		tagVersion := strings.TrimPrefix(release.TagName, "v")
-		tagParts := strings.Split(tagVersion, ".")
-		if len(tagParts) != 3 {
+		if xray.TierOfXrayVersion(release.TagName) == xray.XrayTierUnsupported {
 			continue
 		}
-
-		major, err1 := strconv.Atoi(tagParts[0])
-		minor, err2 := strconv.Atoi(tagParts[1])
-		patch, err3 := strconv.Atoi(tagParts[2])
-		if err1 != nil || err2 != nil || err3 != nil {
-			continue
-		}
-
-		if major > 26 || (major == 26 && minor > 6) || (major == 26 && minor == 6 && patch >= 27) {
-			versions = append(versions, release.TagName)
-		}
+		versions = append(versions, release.TagName)
 	}
 	return versions, nil
+}
+
+// XrayVersionInfo is one entry of the version picker: a release tag and its
+// tier under the Lx-ui version policy (see internal/xray/compat.go).
+type XrayVersionInfo struct {
+	Version string               `json:"version"`
+	Tier    xray.XrayVersionTier `json:"tier"`
+}
+
+// GetXrayVersionInfos returns the installable Xray versions, newest first,
+// with their tier. Recommended and verified versions are always listed (they
+// are known release tags) even when GitHub is unreachable or paginates them
+// away; experimental ones appear only when xrayAllowExperimental is on.
+func (s *ServerService) GetXrayVersionInfos() ([]XrayVersionInfo, error) {
+	allowExperimental, _ := s.settingService.GetXrayAllowExperimental()
+	fetched, fetchErr := s.GetXrayVersionsCached()
+	if fetchErr != nil {
+		logger.Warning("xray versions: GitHub list unavailable, offering pinned versions only:", fetchErr)
+	}
+	return buildXrayVersionInfos(fetched, allowExperimental), nil
+}
+
+func buildXrayVersionInfos(fetched []string, allowExperimental bool) []XrayVersionInfo {
+	seen := map[string]struct{}{}
+	var out []XrayVersionInfo
+	add := func(tag string) {
+		if !xray.XrayVersionAllowed(tag, allowExperimental) {
+			return
+		}
+		if _, dup := seen[tag]; dup {
+			return
+		}
+		seen[tag] = struct{}{}
+		out = append(out, XrayVersionInfo{Version: tag, Tier: xray.TierOfXrayVersion(tag)})
+	}
+	add(xray.RecommendedXrayVersion)
+	for _, v := range xray.VerifiedXrayVersions {
+		add(v)
+	}
+	for _, v := range fetched {
+		add(v)
+	}
+	slices.SortStableFunc(out, func(a, b XrayVersionInfo) int {
+		return -xray.CompareXrayVersions(a.Version, b.Version)
+	})
+	return out
+}
+
+// GetInstallableXrayVersions is the plain tag list of GetXrayVersionInfos,
+// kept for the /getXrayVersion API contract.
+func (s *ServerService) GetInstallableXrayVersions() ([]string, error) {
+	infos, err := s.GetXrayVersionInfos()
+	if err != nil {
+		return nil, err
+	}
+	out := make([]string, 0, len(infos))
+	for _, i := range infos {
+		out = append(out, i.Version)
+	}
+	return out, nil
 }
 
 func (s *ServerService) StopXrayService() error {
@@ -1083,16 +1131,27 @@ func parseXrayDigestSHA256(dgst []byte) (string, error) {
 	return "", fmt.Errorf("xray checksum: no SHA2-256 entry in digest")
 }
 
-// UpdateXray installs an Xray release with pre-update validation and
-// automatic rollback (see xray_update.go, #6871). Xray keeps running until the
-// new binary passed validation.
+// UpdateXray installs an Xray release under the version policy
+// (internal/xray/compat.go) with pre-update validation and automatic rollback
+// (see xray_update.go, #6871). Xray keeps running until the new binary passed
+// validation.
 func (s *ServerService) UpdateXray(version string) error {
-	versions, err := s.GetXrayVersions()
-	if err != nil {
-		return err
+	allowExperimental, _ := s.settingService.GetXrayAllowExperimental()
+	tier := xray.TierOfXrayVersion(version)
+	if !xray.XrayVersionAllowed(version, allowExperimental) {
+		if tier == xray.XrayTierExperimental {
+			return fmt.Errorf("xray %s is experimental (not verified with this panel build); enable xrayAllowExperimental to install it", version)
+		}
+		return fmt.Errorf("xray version %q is not supported (minimum %s)", version, xray.MinXrayVersion)
 	}
-	if !slices.Contains(versions, version) {
-		return fmt.Errorf("xray version %q is not in the fetched release list", version)
+	if tier == xray.XrayTierExperimental {
+		versions, err := s.GetXrayVersions()
+		if err != nil {
+			return err
+		}
+		if !slices.Contains(versions, version) {
+			return fmt.Errorf("xray version %q is not in the fetched release list", version)
+		}
 	}
 
 	zipFileName, err := s.downloadXRay(version)

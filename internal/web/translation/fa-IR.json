@@ -150,6 +150,11 @@
       "xraySwitch": "‌نسخه",
       "xrayUpdates": "به‌روزرسانی‌های Xray",
       "xraySwitchClickDesk": "لطفا بادقت انتخاب کنید. درصورت انتخاب نسخه قدیمی‌تر، امکان ناهماهنگی با پیکربندی فعلی وجود دارد",
+      "xrayTier": {
+        "recommended": "Recommended",
+        "verified": "Verified",
+        "experimental": "Experimental"
+      },
       "updatePanel": "به‌روزرسانی پنل",
       "panelUpdateDesc": "این عملیات Lx-ui را به آخرین نسخه به‌روزرسانی می‌کند و سرویس پنل را مجدداً راه‌اندازی می‌کند.",
       "currentPanelVersion": "نسخه فعلی پنل",
@@ -1335,6 +1340,8 @@
       "nodeTrafficIntervalDesc": "How often the panel pulls traffic, online users and config state from each node (5-300 s, default 5). Raise it on large fleets to cut master CPU and bandwidth; quotas are enforced later accordingly. Applies after a panel restart.",
       "nodeSyncJitter": "Node Sync Jitter (s)",
       "nodeSyncJitterDesc": "Random extra delay (0-60 s, capped at the interval) added to each node heartbeat and traffic tick so polls don't line up with other periodic work. 0 disables it. Applies after a panel restart.",
+      "xrayAllowExperimental": "Allow Experimental Xray Versions",
+      "xrayAllowExperimentalDesc": "Also list and allow installing Xray releases that were not verified with this panel build (usually newer than the recommended one). Each install is still validated first and rolled back automatically if the new core cannot start.",
       "fragment": "فرگمنت",
       "fragmentDesc": "فعال کردن فرگمنت برای بسته‌ی نخست تی‌ال‌اس",
       "fragmentSett": "تنظیمات فرگمنت",

@@ -191,6 +191,38 @@ func TestInstallXrayArchiveWithoutConfigStillChecksVersion(t *testing.T) {
 	}
 }
 
+func TestUpdateXrayRefusesExperimentalWithoutOptIn(t *testing.T) {
+	initTrafficTestDB(t)
+	err := (&ServerService{}).UpdateXray("v99.1.1")
+	if err == nil || !strings.Contains(err.Error(), "experimental") {
+		t.Fatalf("err = %v, want experimental refusal", err)
+	}
+	err = (&ServerService{}).UpdateXray("v26.1.18")
+	if err == nil || !strings.Contains(err.Error(), "not supported") {
+		t.Fatalf("err = %v, want unsupported refusal", err)
+	}
+}
+
+func TestBuildXrayVersionInfos(t *testing.T) {
+	fetched := []string{"v26.11.2", "v26.10.10", "v26.9.30", "v26.8.1"}
+	infos := buildXrayVersionInfos(fetched, false)
+	var tags []string
+	for _, i := range infos {
+		tags = append(tags, i.Version+":"+string(i.Tier))
+	}
+	want := "v26.10.10:recommended v26.9.30:verified v26.7.28:verified v26.7.11:verified v26.6.27:verified"
+	if got := strings.Join(tags, " "); got != want {
+		t.Fatalf("infos = %s\nwant    %s", got, want)
+	}
+	infos = buildXrayVersionInfos(fetched, true)
+	if infos[0].Version != "v26.11.2" || infos[0].Tier != xray.XrayTierExperimental {
+		t.Fatalf("with opt-in the newest experimental release must lead: %+v", infos[0])
+	}
+	if len(buildXrayVersionInfos(nil, false)) != 1+len(xray.VerifiedXrayVersions) {
+		t.Fatal("pinned versions must be offered even without a GitHub list")
+	}
+}
+
 // Opt-in check against a real Xray binary: LXUI_REAL_XRAY=/path/to/xray
 // LXUI_REAL_XRAY_VERSION=v26.10.10 go test -run RealXray ./internal/web/service
 func TestValidateRealXrayBinary(t *testing.T) {

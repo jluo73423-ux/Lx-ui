@@ -3,6 +3,7 @@ export type GeoKind = string;
 export type OnlineAPISupport = number;
 export type ProcessState = string;
 export type Protocol = string;
+export type XrayVersionTier = string;
 export type addrFamily = number;
 export type staticEgressResolver = string;
 export type trafficLocalApplyAction = number;
@@ -190,6 +191,7 @@ export interface AllSetting {
   webKeyFile: string;
   webListen: string;
   webPort: number;
+  xrayAllowExperimental: boolean;
 }
 
 export interface AllSettingView {
@@ -382,6 +384,7 @@ export interface AllSettingView {
   webKeyFile: string;
   webListen: string;
   webPort: number;
+  xrayAllowExperimental: boolean;
 }
 
 export interface AmneziaWGLogs {

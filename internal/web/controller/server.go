@@ -52,6 +52,7 @@ func (a *ServerController) initRouter(g *gin.RouterGroup) {
 	g.GET("/xrayObservatory", a.getXrayObservatory)
 	g.GET("/xrayObservatoryHistory/:tag/:bucket", a.getXrayObservatoryHistoryBucket)
 	g.GET("/getXrayVersion", a.getXrayVersion)
+	g.GET("/getXrayVersionTiers", a.getXrayVersionTiers)
 	g.GET("/getPanelUpdateInfo", a.getPanelUpdateInfo)
 	g.GET("/getUpdateStatus", a.getUpdateStatus)
 	g.GET("/getConfigJson", a.getConfigJson)
@@ -184,13 +185,26 @@ func (a *ServerController) getXrayObservatoryHistoryBucket(c *gin.Context) {
 	jsonObj(c, a.xrayMetricsService.AggregateObservatory(tag, bucket, 60), nil)
 }
 
+// getXrayVersion lists the Xray versions installable under the version
+// policy (recommended + verified, plus experimental when opted in).
 func (a *ServerController) getXrayVersion(c *gin.Context) {
-	versions, err := a.serverService.GetXrayVersionsCached()
+	versions, err := a.serverService.GetInstallableXrayVersions()
 	if err != nil {
 		jsonMsg(c, I18nWeb(c, "getVersion"), err)
 		return
 	}
 	jsonObj(c, versions, nil)
+}
+
+// getXrayVersionTiers is getXrayVersion with each version's policy tier
+// (recommended / verified / experimental).
+func (a *ServerController) getXrayVersionTiers(c *gin.Context) {
+	infos, err := a.serverService.GetXrayVersionInfos()
+	if err != nil {
+		jsonMsg(c, I18nWeb(c, "getVersion"), err)
+		return
+	}
+	jsonObj(c, infos, nil)
 }
 
 // getPanelUpdateInfo retrieves the current and latest panel version.

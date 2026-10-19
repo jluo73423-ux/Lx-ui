@@ -615,6 +615,9 @@
             "maximum": 65535,
             "minimum": 1,
             "type": "integer"
+          },
+          "xrayAllowExperimental": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -798,7 +801,8 @@
           "webDomain",
           "webKeyFile",
           "webListen",
-          "webPort"
+          "webPort",
+          "xrayAllowExperimental"
         ],
         "type": "object"
       },
@@ -1415,6 +1419,9 @@
             "maximum": 65535,
             "minimum": 1,
             "type": "integer"
+          },
+          "xrayAllowExperimental": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -1606,7 +1613,8 @@
           "webDomain",
           "webKeyFile",
           "webListen",
-          "webPort"
+          "webPort",
+          "xrayAllowExperimental"
         ],
         "type": "object"
       },
@@ -6475,7 +6483,7 @@
         "tags": [
           "Server"
         ],
-        "summary": "List Xray binary versions available for install on this host.",
+        "summary": "List Xray versions installable on this host under the version policy: the recommended (bundled) version, verified versions, and experimental ones only when xrayAllowExperimental is on.",
         "operationId": "get_panel_api_server_getXrayVersion",
         "responses": {
           "200": {
@@ -6497,9 +6505,52 @@
                 "example": {
                   "success": true,
                   "obj": [
-                    "v25.10.31",
-                    "v25.9.15",
-                    "v25.8.1"
+                    "v26.10.10",
+                    "v26.9.30",
+                    "v26.7.28"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/panel/api/server/getXrayVersionTiers": {
+      "get": {
+        "tags": [
+          "Server"
+        ],
+        "summary": "Same list as getXrayVersion, with each version tagged recommended, verified or experimental.",
+        "operationId": "get_panel_api_server_getXrayVersionTiers",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "obj": {}
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "obj": [
+                    {
+                      "version": "v26.10.10",
+                      "tier": "recommended"
+                    },
+                    {
+                      "version": "v26.9.30",
+                      "tier": "verified"
+                    }
                   ]
                 }
               }

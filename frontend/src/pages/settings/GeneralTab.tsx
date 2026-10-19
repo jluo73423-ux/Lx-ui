@@ -378,6 +378,17 @@ export default function GeneralTab({ allSetting, updateSetting }: GeneralTabProp
                 />
               </SettingListItem>
 
+              <SettingListItem
+                paddings="small"
+                title={t('pages.settings.xrayAllowExperimental')}
+                description={t('pages.settings.xrayAllowExperimentalDesc')}
+              >
+                <Switch
+                  checked={allSetting.xrayAllowExperimental}
+                  onChange={(v) => updateSetting({ xrayAllowExperimental: v })}
+                />
+              </SettingListItem>
+
               <SettingListItem paddings="small" title={t('pages.settings.language')}>
                 <Select
                   value={lang}

@@ -589,6 +589,9 @@ export const SCHEMAS: Record<string, unknown> = {
         "maximum": 65535,
         "minimum": 1,
         "type": "integer"
+      },
+      "xrayAllowExperimental": {
+        "type": "boolean"
       }
     },
     "required": [
@@ -772,7 +775,8 @@ export const SCHEMAS: Record<string, unknown> = {
       "webDomain",
       "webKeyFile",
       "webListen",
-      "webPort"
+      "webPort",
+      "xrayAllowExperimental"
     ],
     "type": "object"
   },
@@ -1389,6 +1393,9 @@ export const SCHEMAS: Record<string, unknown> = {
         "maximum": 65535,
         "minimum": 1,
         "type": "integer"
+      },
+      "xrayAllowExperimental": {
+        "type": "boolean"
       }
     },
     "required": [
@@ -1580,7 +1587,8 @@ export const SCHEMAS: Record<string, unknown> = {
       "webDomain",
       "webKeyFile",
       "webListen",
-      "webPort"
+      "webPort",
+      "xrayAllowExperimental"
     ],
     "type": "object"
   },

@@ -117,6 +117,7 @@ type AllSetting struct {
 	NodeHeartbeatInterval       int    `json:"nodeHeartbeatInterval" form:"nodeHeartbeatInterval" validate:"gte=5,lte=300"`
 	NodeTrafficInterval         int    `json:"nodeTrafficInterval" form:"nodeTrafficInterval" validate:"gte=5,lte=300"`
 	NodeSyncJitter              int    `json:"nodeSyncJitter" form:"nodeSyncJitter" validate:"gte=0,lte=60"`
+	XrayAllowExperimental       bool   `json:"xrayAllowExperimental" form:"xrayAllowExperimental"`
 	SubEncrypt                  bool   `json:"subEncrypt" form:"subEncrypt"`
 	SubURI                      string `json:"subURI" form:"subURI"`
 	SubJsonPath                 string `json:"subJsonPath" form:"subJsonPath"`
