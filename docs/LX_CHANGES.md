@@ -8,3 +8,4 @@ Fork point: upstream `a8d0700b` (3x-ui v3.10.2 + 2 commits), 2026-10-18.
 ## 2026-10-19 — Milestone 1
 
 - Phase 0: repository set up, NOTICE and this file added. LICENSE (GPL-3.0) unchanged.
+- Phase 2: merged 12 upstream pull requests into `lx-base` (list in docs/UPSTREAM_SYNC.md).
