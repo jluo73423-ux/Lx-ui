@@ -131,6 +131,21 @@ export const SCHEMAS: Record<string, unknown> = {
         "minimum": 1,
         "type": "integer"
       },
+      "nodeHeartbeatInterval": {
+        "maximum": 300,
+        "minimum": 5,
+        "type": "integer"
+      },
+      "nodeSyncJitter": {
+        "maximum": 60,
+        "minimum": 0,
+        "type": "integer"
+      },
+      "nodeTrafficInterval": {
+        "maximum": 300,
+        "minimum": 5,
+        "type": "integer"
+      },
       "outboundDownThreshold": {
         "maximum": 100,
         "minimum": 1,
@@ -616,6 +631,9 @@ export const SCHEMAS: Record<string, unknown> = {
       "ldapUserFilter",
       "ldapVlessField",
       "nodeDownThreshold",
+      "nodeHeartbeatInterval",
+      "nodeSyncJitter",
+      "nodeTrafficInterval",
       "outboundDownThreshold",
       "pageSize",
       "panelOutbound",
@@ -911,6 +929,21 @@ export const SCHEMAS: Record<string, unknown> = {
       "nodeDownThreshold": {
         "maximum": 100,
         "minimum": 1,
+        "type": "integer"
+      },
+      "nodeHeartbeatInterval": {
+        "maximum": 300,
+        "minimum": 5,
+        "type": "integer"
+      },
+      "nodeSyncJitter": {
+        "maximum": 60,
+        "minimum": 0,
+        "type": "integer"
+      },
+      "nodeTrafficInterval": {
+        "maximum": 300,
+        "minimum": 5,
         "type": "integer"
       },
       "outboundDownThreshold": {
@@ -1406,6 +1439,9 @@ export const SCHEMAS: Record<string, unknown> = {
       "ldapUserFilter",
       "ldapVlessField",
       "nodeDownThreshold",
+      "nodeHeartbeatInterval",
+      "nodeSyncJitter",
+      "nodeTrafficInterval",
       "outboundDownThreshold",
       "pageSize",
       "panelOutbound",

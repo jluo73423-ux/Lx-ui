@@ -48,6 +48,9 @@ export interface AllSetting {
   ldapUserFilter: string;
   ldapVlessField: string;
   nodeDownThreshold: number;
+  nodeHeartbeatInterval: number;
+  nodeSyncJitter: number;
+  nodeTrafficInterval: number;
   outboundDownThreshold: number;
   pageSize: number;
   panelOutbound: string;
@@ -237,6 +240,9 @@ export interface AllSettingView {
   ldapUserFilter: string;
   ldapVlessField: string;
   nodeDownThreshold: number;
+  nodeHeartbeatInterval: number;
+  nodeSyncJitter: number;
+  nodeTrafficInterval: number;
   outboundDownThreshold: number;
   pageSize: number;
   panelOutbound: string;

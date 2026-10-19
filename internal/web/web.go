@@ -289,11 +289,12 @@ func (s *Server) initRouter() (*gin.Engine, error) {
 }
 
 // Background-job cadences. Centralized here as the single tuning surface; the
-// values are unchanged from the historical hardcoded cron specs. Follow-up:
-// make these configurable via settings, add per-tick jitter to de-synchronize
-// fleet load, skip expensive jobs when no WebSocket clients are connected or
-// node/xray state is unchanged, and export per-job duration/skipped/error
-// counters.
+// values are unchanged from the historical hardcoded cron specs. The node
+// heartbeat and traffic-sync cadences are configurable (nodeHeartbeatInterval,
+// nodeTrafficInterval, nodeSyncJitter; #6541) and read once at startTask, so a
+// change applies after a panel restart; the two constants below are only the
+// documented defaults. Follow-up: skip expensive jobs when node/xray state is
+// unchanged and export per-job duration/skipped/error counters.
 const (
 	cadenceXrayRunning   = "@every 1s"
 	cadenceXrayRestart   = "@every 30s"
@@ -354,9 +355,15 @@ func (s *Server) startTask(restartXray bool, loc *time.Location) {
 	// check client ips from log file every 10 sec
 	_, _ = s.cron.AddJob(cadenceClientIPScan, job.NewCheckClientIpJob())
 
-	_, _ = s.cron.AddJob(cadenceNodeHeartbeat, job.NewNodeHeartbeatJob())
+	heartbeatSec := s.settingService.GetNodeHeartbeatInterval()
+	trafficSec := s.settingService.GetNodeTrafficInterval()
+	jitterSec := s.settingService.GetNodeSyncJitter()
+	if heartbeatSec != service.NodeSyncIntervalDefault || trafficSec != service.NodeSyncIntervalDefault || jitterSec != 0 {
+		logger.Infof("node sync cadence: heartbeat %ds, traffic %ds, jitter up to %ds", heartbeatSec, trafficSec, jitterSec)
+	}
+	s.cron.Schedule(job.NewJitterSchedule(heartbeatSec, jitterSec), job.NewNodeHeartbeatJob())
 
-	_, _ = s.cron.AddJob(cadenceNodeTraffic, job.NewNodeTrafficSyncJob())
+	s.cron.Schedule(job.NewJitterSchedule(trafficSec, jitterSec), job.NewNodeTrafficSyncJob())
 
 	// Outbound subscription auto-refresh (respects per-sub updateInterval)
 	_, _ = s.cron.AddJob(cadenceOutboundSub, job.NewOutboundSubscriptionJob())

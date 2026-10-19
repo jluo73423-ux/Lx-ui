@@ -64,6 +64,9 @@ export class AllSetting {
   externalTrafficInformEnable = false;
   externalTrafficInformURI = '';
   restartXrayOnClientDisable = true;
+  nodeHeartbeatInterval = 5;
+  nodeTrafficInterval = 5;
+  nodeSyncJitter = 0;
   subCertFile = '';
   subKeyFile = '';
   externalSubUserAgent = 'v2rayNG/1.8.5';

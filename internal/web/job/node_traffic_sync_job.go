@@ -2,6 +2,9 @@ package job
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/binary"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -24,6 +27,10 @@ const (
 	nodeClientIpSyncInterval      = 10 * time.Second
 	nodeClientIpSyncTimeout       = 6 * time.Second
 	nodeGlobalPushInterval        = 30 * time.Second
+	// nodeGlobalPushRefresh forces a global push even when the payload is
+	// unchanged, so a node that lost its rows (reinstall, DB restore) recovers
+	// well inside globalTrafficFreshWindow (24h) (#6541).
+	nodeGlobalPushRefresh = 5 * time.Minute
 	// nodeInboundSpeedWindowMs is the poll window node-inbound speed deltas are
 	// normalized to; it MUST match the dashboard's TRAFFIC_POLL_INTERVAL_S (5s),
 	// the fixed divisor the frontend applies to turn a delta into a rate.
@@ -47,6 +54,9 @@ type NodeTrafficSyncJob struct {
 	lastIpSync     int64
 	globalPushMu   sync.Mutex
 	lastGlobalPush int64
+	// lastGlobalPayload maps node id -> globalPushStamp of the last payload the
+	// node accepted, so an unchanged payload is not re-sent every 30s.
+	lastGlobalPayload sync.Map
 	// noGuidIpEndpoint tracks nodes (by id) whose client-IP attribution endpoint
 	// returned 404, so an old-build node is noted once instead of every cycle.
 	noGuidIpEndpoint sync.Map
@@ -320,6 +330,8 @@ func (j *NodeTrafficSyncJob) maybePushGlobals(mgr *runtime.Manager, nodes []*mod
 	var wg sync.WaitGroup
 	for _, n := range nodes {
 		if !n.Enable || n.Status != "online" {
+			// A node coming back may have lost state; push in full next time.
+			j.lastGlobalPayload.Delete(n.Id)
 			continue
 		}
 		remote, err := mgr.RemoteFor(n)
@@ -334,6 +346,10 @@ func (j *NodeTrafficSyncJob) maybePushGlobals(mgr *runtime.Manager, nodes []*mod
 		if len(traffics) == 0 {
 			continue
 		}
+		digest := globalPayloadDigest(masterGuid, traffics)
+		if j.globalPushUnchanged(n.Id, digest, now) {
+			continue
+		}
 		wg.Add(1)
 		sem <- struct{}{}
 		n, remote, traffics := n, remote, traffics
@@ -342,7 +358,13 @@ func (j *NodeTrafficSyncJob) maybePushGlobals(mgr *runtime.Manager, nodes []*mod
 			defer func() { <-sem }()
 			ctx, cancel := context.WithTimeout(context.Background(), nodeTrafficSyncRequestTimeout)
 			defer cancel()
-			if err := remote.PushGlobalClientTraffics(ctx, masterGuid, traffics); err != nil {
+			err := remote.PushGlobalClientTraffics(ctx, masterGuid, traffics)
+			if err == nil {
+				j.lastGlobalPayload.Store(n.Id, globalPushStamp{digest: digest, at: now})
+			} else {
+				j.lastGlobalPayload.Delete(n.Id)
+			}
+			if err != nil {
 				// An old-build node without the endpoint answers 404 — not worth a
 				// warning every cycle.
 				if strings.Contains(err.Error(), "HTTP 404") {
@@ -354,6 +376,51 @@ func (j *NodeTrafficSyncJob) maybePushGlobals(mgr *runtime.Manager, nodes []*mod
 		})
 	}
 	wg.Wait()
+}
+
+// globalPushStamp records what was last pushed to a node and when (unix sec).
+type globalPushStamp struct {
+	digest [sha256.Size]byte
+	at     int64
+}
+
+// globalPayloadDigest hashes exactly the fields AcceptGlobalTraffic stores
+// (email, up, down) in email order, so row order or unrelated columns such as
+// lastOnline do not defeat the skip.
+func globalPayloadDigest(masterGuid string, traffics []*xray.ClientTraffic) [sha256.Size]byte {
+	rows := make([]*xray.ClientTraffic, 0, len(traffics))
+	for _, t := range traffics {
+		if t != nil && t.Email != "" {
+			rows = append(rows, t)
+		}
+	}
+	sort.SliceStable(rows, func(a, b int) bool { return rows[a].Email < rows[b].Email })
+	h := sha256.New()
+	h.Write([]byte(masterGuid))
+	h.Write([]byte{0})
+	var buf [8]byte
+	for _, t := range rows {
+		h.Write([]byte(t.Email))
+		h.Write([]byte{0})
+		binary.BigEndian.PutUint64(buf[:], uint64(t.Up))
+		h.Write(buf[:])
+		binary.BigEndian.PutUint64(buf[:], uint64(t.Down))
+		h.Write(buf[:])
+	}
+	var out [sha256.Size]byte
+	copy(out[:], h.Sum(nil))
+	return out
+}
+
+// globalPushUnchanged reports whether the node already holds this exact
+// payload from a push younger than nodeGlobalPushRefresh.
+func (j *NodeTrafficSyncJob) globalPushUnchanged(nodeID int, digest [sha256.Size]byte, now int64) bool {
+	v, ok := j.lastGlobalPayload.Load(nodeID)
+	if !ok {
+		return false
+	}
+	st := v.(globalPushStamp)
+	return st.digest == digest && now-st.at < int64(nodeGlobalPushRefresh/time.Second)
 }
 
 // syncOne pulls one node's traffic snapshot and merges it. It returns the

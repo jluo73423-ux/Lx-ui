@@ -336,6 +336,48 @@ export default function GeneralTab({ allSetting, updateSetting }: GeneralTabProp
                 />
               </SettingListItem>
 
+              <SettingListItem
+                paddings="small"
+                title={t('pages.settings.nodeHeartbeatInterval')}
+                description={t('pages.settings.nodeHeartbeatIntervalDesc')}
+              >
+                <InputNumber
+                  value={allSetting.nodeHeartbeatInterval}
+                  min={5}
+                  max={300}
+                  style={{ width: '100%' }}
+                  onChange={onNumber((v) => updateSetting({ nodeHeartbeatInterval: v }))}
+                />
+              </SettingListItem>
+
+              <SettingListItem
+                paddings="small"
+                title={t('pages.settings.nodeTrafficInterval')}
+                description={t('pages.settings.nodeTrafficIntervalDesc')}
+              >
+                <InputNumber
+                  value={allSetting.nodeTrafficInterval}
+                  min={5}
+                  max={300}
+                  style={{ width: '100%' }}
+                  onChange={onNumber((v) => updateSetting({ nodeTrafficInterval: v }))}
+                />
+              </SettingListItem>
+
+              <SettingListItem
+                paddings="small"
+                title={t('pages.settings.nodeSyncJitter')}
+                description={t('pages.settings.nodeSyncJitterDesc')}
+              >
+                <InputNumber
+                  value={allSetting.nodeSyncJitter}
+                  min={0}
+                  max={60}
+                  style={{ width: '100%' }}
+                  onChange={onNumber((v) => updateSetting({ nodeSyncJitter: v }))}
+                />
+              </SettingListItem>
+
               <SettingListItem paddings="small" title={t('pages.settings.language')}>
                 <Select
                   value={lang}

@@ -201,6 +201,9 @@ var defaultValueMap = map[string]string{
 	"externalTrafficInformEnable": "false",
 	"externalTrafficInformURI":    "",
 	"restartXrayOnClientDisable":  "true",
+	"nodeHeartbeatInterval":       "5",
+	"nodeTrafficInterval":         "5",
+	"nodeSyncJitter":              "0",
 	"xrayOutboundTestUrl":         "https://www.google.com/generate_204",
 	"panelOutbound":               "",
 	"devChannelEnable":            "false",
@@ -1321,6 +1324,44 @@ func (s *SettingService) GetRestartXrayOnClientDisable() (bool, error) {
 
 func (s *SettingService) SetRestartXrayOnClientDisable(value bool) error {
 	return s.setBool("restartXrayOnClientDisable", value)
+}
+
+// Node sync cadence bounds (#6541). The defaults match the historical
+// hardcoded "@every 5s" specs; larger fleets can trade freshness for load.
+const (
+	NodeSyncIntervalMin     = 5
+	NodeSyncIntervalMax     = 300
+	NodeSyncIntervalDefault = 5
+	NodeSyncJitterMax       = 60
+)
+
+func clampNodeSyncInterval(v int, err error) int {
+	if err != nil || v <= 0 {
+		return NodeSyncIntervalDefault
+	}
+	return min(max(v, NodeSyncIntervalMin), NodeSyncIntervalMax)
+}
+
+// GetNodeHeartbeatInterval returns the node heartbeat cadence in seconds,
+// clamped to [NodeSyncIntervalMin, NodeSyncIntervalMax].
+func (s *SettingService) GetNodeHeartbeatInterval() int {
+	return clampNodeSyncInterval(s.getInt("nodeHeartbeatInterval"))
+}
+
+// GetNodeTrafficInterval returns the node traffic-sync cadence in seconds,
+// clamped to [NodeSyncIntervalMin, NodeSyncIntervalMax].
+func (s *SettingService) GetNodeTrafficInterval() int {
+	return clampNodeSyncInterval(s.getInt("nodeTrafficInterval"))
+}
+
+// GetNodeSyncJitter returns the extra random delay (seconds) added to each
+// node job tick, clamped to [0, NodeSyncJitterMax].
+func (s *SettingService) GetNodeSyncJitter() int {
+	v, err := s.getInt("nodeSyncJitter")
+	if err != nil || v < 0 {
+		return 0
+	}
+	return min(v, NodeSyncJitterMax)
 }
 
 // GetDevChannelEnable reports whether the panel self-update tracks the rolling
