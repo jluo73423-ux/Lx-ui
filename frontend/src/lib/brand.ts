@@ -2,5 +2,5 @@
 export const BRAND_NAME = 'Lx-ui';
 export const BRAND_SHORT = 'Lx';
 export const BRAND_ID = 'lx-ui';
-export const LXUI_REPO = '<ORG>/Lx-ui';
+export const LXUI_REPO = 'jluo73423-ux/Lx-ui';
 export const REPO_URL = `https://github.com/${LXUI_REPO}`;

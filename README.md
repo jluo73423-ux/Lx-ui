@@ -12,9 +12,10 @@ see [NOTICE](NOTICE) and [docs/LX_CHANGES.md](docs/LX_CHANGES.md).
 > Lx-ui is intended for personal use. Do not use it for illegal purposes.
 
 > [!NOTE]
-> **Repository placeholder.** Until the project is published, every repository
-> URL in this tree uses the placeholder `<ORG>/Lx-ui`. It is defined in exactly
-> one place, [`tools/rebrand.env`](tools/rebrand.env) (`LXUI_REPO`). To publish:
+> **Release repository.** Every repository URL in this tree (install/update
+> scripts, panel self-update, docs, frontend) points at `jluo73423-ux/Lx-ui`.
+> It is defined in exactly one place, [`tools/rebrand.env`](tools/rebrand.env)
+> (`LXUI_REPO`). To move the project to another owner:
 >
 > ```bash
 > sed -i 's#^LXUI_REPO=.*#LXUI_REPO="your-org/Lx-ui"#' tools/rebrand.env
@@ -22,9 +23,8 @@ see [NOTICE](NOTICE) and [docs/LX_CHANGES.md](docs/LX_CHANGES.md).
 > tools/check-rebrand.sh    # guard: fails on stray upstream download URLs
 > ```
 >
-> While the placeholder is in place the panel's self-update is disabled
-> (it never contacts a bogus URL). Release builds made by CI stamp the
-> repository automatically (`-X .../internal/config.releaseRepo=$GITHUB_REPOSITORY`).
+> Release builds made by CI stamp the repository automatically
+> (`-X .../internal/config.releaseRepo=$GITHUB_REPOSITORY`).
 
 ## Relation to 3x-ui
 
@@ -43,7 +43,7 @@ see [NOTICE](NOTICE) and [docs/LX_CHANGES.md](docs/LX_CHANGES.md).
 ## Install
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/<ORG>/Lx-ui/main/install.sh)
+bash <(curl -Ls https://raw.githubusercontent.com/jluo73423-ux/Lx-ui/main/install.sh)
 ```
 
 A specific version: append its tag, e.g. `v1.0.0`. After installation run
@@ -51,7 +51,7 @@ A specific version: append its tag, e.g. `v1.0.0`. After installation run
 `.sha256` sums. Non-interactive installs (cloud-init) work as in 3x-ui with
 `XUI_NONINTERACTIVE=1`; see [deploy/](deploy/).
 
-Docker image: `ghcr.io/<org>/lx-ui` (data volume `/etc/lx-ui`).
+Docker image: `ghcr.io/jluo73423-ux/lx-ui` (data volume `/etc/lx-ui`).
 
 | | 3x-ui | Lx-ui |
 | --- | --- | --- |
@@ -66,7 +66,7 @@ Docker image: `ghcr.io/<org>/lx-ui` (data volume `/etc/lx-ui`).
 **Recommended (systemd hosts):**
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/<ORG>/Lx-ui/main/install.sh) --migrate-from-3x-ui
+bash <(curl -Ls https://raw.githubusercontent.com/jluo73423-ux/Lx-ui/main/install.sh) --migrate-from-3x-ui
 ```
 
 The script stops and disables `x-ui.service`, backs up `/etc/x-ui` to

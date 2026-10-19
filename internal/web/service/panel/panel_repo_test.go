@@ -6,7 +6,7 @@ import (
 )
 
 func TestSelfUpdateRefusesPlaceholderRepo(t *testing.T) {
-	t.Setenv("LXUI_REPO", "<ORG>/Lx-ui")
+	t.Setenv("LXUI_REPO", "<ORG>/Lx-ui") // lxui:keep
 	if _, err := fetchPanelRelease(""); !errors.Is(err, errReleaseRepoNotConfigured) {
 		t.Fatalf("fetchPanelRelease err = %v, want errReleaseRepoNotConfigured", err)
 	}

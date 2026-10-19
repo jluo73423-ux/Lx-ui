@@ -377,7 +377,7 @@ func releaseUpdateSlot() {
 }
 
 // errReleaseRepoNotConfigured is returned while internal/config/repo still
-// holds the "<ORG>/Lx-ui" placeholder (see tools/rebrand.env).
+// holds the "<ORG>/Lx-ui" placeholder (see tools/rebrand.env). // lxui:keep
 var errReleaseRepoNotConfigured = errors.New("self-update is unavailable: the Lx-ui release repository is not configured " +
 	"(set LXUI_REPO in tools/rebrand.env and rebuild, or set the LXUI_REPO environment variable)")
 

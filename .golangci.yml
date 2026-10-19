@@ -46,7 +46,7 @@ formatters:
   settings:
     goimports:
       local-prefixes:
-        - github.com/<ORG>/Lx-ui
+        - github.com/jluo73423-ux/Lx-ui
   exclusions:
     paths:
       - frontend

@@ -34,7 +34,7 @@ func GetReleaseRepo() string {
 }
 
 // IsReleaseRepoConfigured reports whether GetReleaseRepo is a real
-// "owner/name" value. It is false while the "<ORG>/Lx-ui" placeholder is in
+// "owner/name" value. It is false while the "<ORG>/Lx-ui" placeholder is in // lxui:keep
 // place, so the panel never sends requests to a bogus URL.
 func IsReleaseRepoConfigured() bool {
 	return repoPattern.MatchString(GetReleaseRepo())

@@ -11,8 +11,8 @@
 > 本项目仅供个人使用，请勿用于非法用途。
 
 > [!NOTE]
-> **仓库地址占位符。** 在正式发布前，本仓库中所有仓库 URL 都使用占位符 `<ORG>/Lx-ui`，
-> 它只在一个地方定义：[`tools/rebrand.env`](tools/rebrand.env) 中的 `LXUI_REPO`。发布时：
+> **发布仓库。** 本仓库中所有仓库 URL（安装/更新脚本、面板自更新、文档、前端）都指向 `jluo73423-ux/Lx-ui`，
+> 它只在一个地方定义：[`tools/rebrand.env`](tools/rebrand.env) 中的 `LXUI_REPO`。如需迁移到其他账号：
 >
 > ```bash
 > sed -i 's#^LXUI_REPO=.*#LXUI_REPO="your-org/Lx-ui"#' tools/rebrand.env
@@ -20,8 +20,7 @@
 > tools/check-rebrand.sh    # 守卫：发现残留的上游下载地址即失败
 > ```
 >
-> 占位符未替换时，面板的自更新功能处于禁用状态（不会访问无效地址）。CI 构建的发布版会自动写入
-> 仓库名（`-X .../internal/config.releaseRepo=$GITHUB_REPOSITORY`）。
+> CI 构建的发布版会自动写入仓库名（`-X .../internal/config.releaseRepo=$GITHUB_REPOSITORY`）。
 
 ## 与 3x-ui 的关系
 
@@ -36,14 +35,14 @@
 ## 安装
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/<ORG>/Lx-ui/main/install.sh)
+bash <(curl -Ls https://raw.githubusercontent.com/jluo73423-ux/Lx-ui/main/install.sh)
 ```
 
 安装指定版本：在末尾追加标签，例如 `v1.0.0`。安装完成后运行 `lx-ui` 打开管理菜单。
 发布包会用 `.sha256` 校验。无人值守安装（cloud-init）与 3x-ui 相同，设置 `XUI_NONINTERACTIVE=1`，
 见 [deploy/](deploy/)。
 
-Docker 镜像：`ghcr.io/<org>/lx-ui`（数据卷 `/etc/lx-ui`）。
+Docker 镜像：`ghcr.io/jluo73423-ux/lx-ui`（数据卷 `/etc/lx-ui`）。
 
 | | 3x-ui | Lx-ui |
 | --- | --- | --- |
@@ -58,7 +57,7 @@ Docker 镜像：`ghcr.io/<org>/lx-ui`（数据卷 `/etc/lx-ui`）。
 **推荐方式（systemd 主机）：**
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/<ORG>/Lx-ui/main/install.sh) --migrate-from-3x-ui
+bash <(curl -Ls https://raw.githubusercontent.com/jluo73423-ux/Lx-ui/main/install.sh) --migrate-from-3x-ui
 ```
 
 脚本会停止并禁用 `x-ui.service`，把 `/etc/x-ui` 备份为 `/etc/x-ui.bak-<时间戳>`，

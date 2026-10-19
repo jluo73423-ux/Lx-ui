@@ -36,7 +36,7 @@ func TestReleaseRepoPrecedence(t *testing.T) {
 }
 
 func TestPlaceholderRepoIsNotConfigured(t *testing.T) {
-	t.Setenv("LXUI_REPO", "<ORG>/Lx-ui")
+	t.Setenv("LXUI_REPO", "<ORG>/Lx-ui") // lxui:keep
 	if IsReleaseRepoConfigured() {
 		t.Error("placeholder must not count as configured")
 	}

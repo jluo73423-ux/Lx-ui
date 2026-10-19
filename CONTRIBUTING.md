@@ -50,7 +50,7 @@ Cross-building the Linux SQLite target from Windows (or vice versa) requires a s
 ## First-time setup
 
 ```bash
-git clone https://github.com/<ORG>/Lx-ui.git
+git clone https://github.com/jluo73423-ux/Lx-ui.git
 cd lx-ui
 
 cp .env.example .env

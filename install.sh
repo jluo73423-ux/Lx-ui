@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # >>> lx-ui identity (managed by tools/rebrand.sh; edit tools/rebrand.env) >>>
-LXUI_REPO="${LXUI_REPO:-<ORG>/Lx-ui}"
+LXUI_REPO="${LXUI_REPO:-jluo73423-ux/Lx-ui}"
 LXUI_RAW_BASE="https://raw.githubusercontent.com/${LXUI_REPO}"
 LXUI_RELEASE_BASE="https://github.com/${LXUI_REPO}/releases"
 # LXUI_* variables are canonical; the legacy XUI_* names keep working as aliases.
