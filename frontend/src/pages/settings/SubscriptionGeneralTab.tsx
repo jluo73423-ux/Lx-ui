@@ -21,6 +21,7 @@ import { sanitizePath, normalizePath } from './uriPath';
 import HappSettingsContent from './HappSettingsContent';
 import IncySettingsContent from './IncySettingsContent';
 import { remoteSourceBadge } from './subscriptionShared';
+import { REPO_URL } from '@/lib/brand';
 
 interface SubscriptionGeneralTabProps {
   allSetting: AllSetting;
@@ -359,7 +360,7 @@ export default function SubscriptionGeneralTab({
                   <>
                     {t('pages.settings.subThemeDirDesc')}{' '}
                     <a
-                      href="https://github.com/<ORG>/Lx-ui/blob/main/docs/custom-subscription-templates.md"
+                      href={`${REPO_URL}/blob/main/docs/custom-subscription-templates.md`}
                       target="_blank"
                       rel="noopener noreferrer"
                     >

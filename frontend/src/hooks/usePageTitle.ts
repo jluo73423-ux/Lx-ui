@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
+import { BRAND_NAME } from '@/lib/brand';
 
 const TITLE_KEYS: Record<string, string> = {
   '/': 'menu.dashboard',
@@ -22,7 +23,7 @@ export function usePageTitle() {
 
   useEffect(() => {
     const key = TITLE_KEYS[pathname];
-    const title = key ? t(key) : 'Lx-ui';
+    const title = key ? t(key) : BRAND_NAME;
     const host = window.location.hostname;
     document.title = host ? `${host} - ${title}` : title;
   }, [pathname, t]);

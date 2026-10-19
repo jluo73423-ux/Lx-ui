@@ -44,6 +44,7 @@ import { useTheme } from '@/hooks/useTheme';
 import type { ClientRecord, InboundOption } from '@/schemas/client';
 import { commandPaletteStore, useCommandPalette } from './useCommandPalette';
 import './CommandPalette.css';
+import { BRAND_NAME } from '@/lib/brand';
 
 interface PaletteItem {
   id: string;
@@ -805,7 +806,7 @@ export default function CommandPalette() {
                 {t('close')}
               </span>
             </div>
-            <span>lx-ui Command Palette</span>
+            <span>{BRAND_NAME} Command Palette</span>
           </div>
         </div>
       </div>

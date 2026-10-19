@@ -9,6 +9,7 @@ import AppSidebar from '@/layouts/AppSidebar';
 import { EXAMPLES } from '@/generated/examples';
 import { buildWebSocketEvents } from './websocket-events';
 import './ApiDocsPage.css';
+import { BRAND_NAME } from '@/lib/brand';
 
 const basePath = window.X_UI_BASE_PATH || '';
 const openApiUrl = `${basePath}panel/api/openapi.json`;
@@ -91,7 +92,7 @@ export default function ApiDocsPage() {
               items={[
                 {
                   key: 'panel-api',
-                  label: 'Lx-ui Panel API',
+                  label: `${BRAND_NAME} Panel API`,
                   children: (
                     <div className="docs-wrapper" role="region" aria-label={t('menu.apiDocs')}>
                       <SwaggerUI
