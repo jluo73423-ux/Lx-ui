@@ -134,3 +134,45 @@ change that limits damage regardless of the cause.
 - Not testable here: GitHub Actions, real systemd units / install.sh /
   update.sh on a VM, Postgres, multi-arch (QEMU) images, Windows build,
   panel self-update against a real release repository.
+
+## 2026-10-20 — Hotfix: "nodes don't work"
+
+Investigated with the real binary, a real Xray core and a temp DB
+(`/workspace/lx-reports/e2e/traffic_e2e.py`: 15 inbounds — VLESS REALITY/Vision,
+VLESS/VMess/Trojan over TCP/WS/gRPC with and without TLS, Shadowsocks
+AES-GCM and 2022 — each driven through a real Xray client built only from the
+subscription's share link; all carry traffic and the panel counts it).
+
+- **Fixed — panel Xray update always failed on real installs (confirmed on a
+  live server).** The pre-update config test ran the staged binary as
+  `bin/.xray-new-*` with `cmd.Dir=bin`, i.e. `bin/bin/...`, so with the default
+  relative bin folder every switch failed with `fork/exec ...: no such file or
+  directory` (the current core kept running). Paths are now absolute;
+  `TestInstallXrayArchiveWithRelativeBinFolder` reproduces the live error on
+  the old code. Verified end to end: panel switch v26.10.10 → v26.9.30 →
+  v26.10.10 with a relative bin folder.
+- **Fixed — install.sh / update.sh with no stable release.** GitHub's
+  `releases/latest` ignores pre-releases, so the one-line installer failed with
+  "Failed to fetch lx-ui version" while only `dev-latest` existed. Both now fall
+  back to `dev-latest` (with a warning) when its archive exists for the
+  architecture, and explain the situation otherwise. Verified in a clean
+  Debian 12 container: download, SHA-256 check, extraction, binary + Xray
+  26.10.10 + geo files present, panel answers on the configured port/path.
+- **Documented + surfaced — REALITY client gates of Xray-core (not a panel
+  bug, but the most likely cause of "online but no traffic").**
+  - v26.9.8+ (`xtls/reality` 8cdf7bf9c7f0, includes the bundled v26.10.10)
+    reject ClientHellos without an `X25519MLKEM768` key share before X25519;
+    not configurable. Measured locally: server v26.10.10 accepts Xray clients
+    with fp chrome/firefox/safari, rejects ios/edge/qq/random; servers v26.3.27,
+    v26.6.27 and v26.7.28 accept all of them. Shadowrocket, sing-box and Mihomo
+    raw links are reported upstream to lack the key share (not tested here).
+  - v26.7.11–v26.9.7 default an empty `minClientVer` to 26.3.27.
+  - `xray.RealityGateOf` classifies cores; `/getXrayVersionTiers` returns
+    `realityGate` and the version picker shows a tag + explanation (13 locales).
+    README gained a troubleshooting section (also: ICMP ping is often blocked by
+    cloud firewalls and says nothing about the proxy).
+- Not changed: the default config template (freedom `finalRules` blocking
+  `geoip:private`) is upstream's and correct; it does block destinations that
+  resolve to private/benchmark ranges, e.g. on hosts whose resolver is a
+  fake-IP DNS (the dev box is one — the e2e test therefore targets an IP
+  literal).

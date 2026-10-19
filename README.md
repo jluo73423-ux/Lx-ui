@@ -46,7 +46,10 @@ see [NOTICE](NOTICE) and [docs/LX_CHANGES.md](docs/LX_CHANGES.md).
 bash <(curl -Ls https://raw.githubusercontent.com/jluo73423-ux/Lx-ui/main/install.sh)
 ```
 
-A specific version: append its tag, e.g. `v1.0.0`. After installation run
+A specific version: append its tag, e.g. `v1.0.0`; `dev` installs the rolling
+build of `main` (pre-release tag `dev-latest`). While the repository has no
+stable release yet, the installer and `update.sh` fall back to `dev-latest`
+automatically and say so. After installation run
 `lx-ui` for the management menu. Release archives are verified against their
 `.sha256` sums. Non-interactive installs (cloud-init) work as in 3x-ui with
 `XUI_NONINTERACTIVE=1`; see [deploy/](deploy/).
@@ -60,6 +63,23 @@ Docker image: `ghcr.io/jluo73423-ux/lx-ui` (data volume `/etc/lx-ui`).
 | data folder / SQLite | `/etc/x-ui/x-ui.db` | `/etc/lx-ui/lx-ui.db` |
 | logs | `/var/log/x-ui` | `/var/log/lx-ui` |
 | env file | `/etc/default/x-ui` | `/etc/default/lx-ui` |
+
+## Troubleshooting: REALITY node online but no traffic
+
+- **Xray v26.9.8 and later** (including the bundled v26.10.10) silently reject
+  REALITY clients whose TLS ClientHello has no `X25519MLKEM768` key share. The
+  client "connects" (to the real target site), the panel may even show it,
+  but nothing is proxied and Xray logs nothing. Affected: Shadowrocket,
+  sing-box, Mihomo/Clash with raw `vless://` links (the Clash subscription adds
+  `support-x25519mlkem768`), and fingerprints such as `ios`, `edge`, `qq`,
+  `random`. Current Xray-core clients (v2rayN, v2rayNG, Xray) with
+  `fp=chrome`/`firefox`/`safari` work. If you need such clients, switch the core
+  in **Overview → Xray version** to one without this gate (e.g. `v26.6.27`);
+  the picker labels every core with its REALITY gate. Cores v26.7.11–v26.9.7
+  instead need **Min Client Ver** set explicitly (e.g. `1.0`).
+- A failing **ping** (ICMP) test says nothing about the proxy: many cloud
+  firewalls (AWS security groups by default) drop ICMP. Use a TCP/URL latency
+  test in the client.
 
 ## Migrating from 3x-ui
 

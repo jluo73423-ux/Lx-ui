@@ -38,7 +38,8 @@
 bash <(curl -Ls https://raw.githubusercontent.com/jluo73423-ux/Lx-ui/main/install.sh)
 ```
 
-安装指定版本：在末尾追加标签，例如 `v1.0.0`。安装完成后运行 `lx-ui` 打开管理菜单。
+安装指定版本：在末尾追加标签，例如 `v1.0.0`；`dev` 表示安装 `main` 的滚动构建（预发布标签 `dev-latest`）。
+仓库还没有正式版时，安装脚本和 `update.sh` 会自动回退到 `dev-latest` 并给出提示。安装完成后运行 `lx-ui` 打开管理菜单。
 发布包会用 `.sha256` 校验。无人值守安装（cloud-init）与 3x-ui 相同，设置 `XUI_NONINTERACTIVE=1`，
 见 [deploy/](deploy/)。
 
@@ -51,6 +52,19 @@ Docker 镜像：`ghcr.io/jluo73423-ux/lx-ui`（数据卷 `/etc/lx-ui`）。
 | 数据目录 / SQLite | `/etc/x-ui/x-ui.db` | `/etc/lx-ui/lx-ui.db` |
 | 日志 | `/var/log/x-ui` | `/var/log/lx-ui` |
 | 环境变量文件 | `/etc/default/x-ui` | `/etc/default/lx-ui` |
+
+## 常见问题：REALITY 节点显示在线但没有流量
+
+- **Xray v26.9.8 及以上**（包括随包的 v26.10.10）会静默拒绝 TLS ClientHello 中不带
+  `X25519MLKEM768` 密钥交换的 REALITY 客户端：客户端看似“连上”（其实连到了伪装目标网站），
+  但不代理任何流量，Xray 也不记录日志。受影响：小火箭 Shadowrocket、sing-box、直接导入
+  `vless://` 链接的 Mihomo/Clash（Clash 订阅会自动加 `support-x25519mlkem768`），以及
+  `ios`、`edge`、`qq`、`random` 等指纹。新版 Xray-core 客户端（v2rayN、v2rayNG、Xray）配合
+  `fp=chrome`/`firefox`/`safari` 正常。需要用这些客户端时，在 **概览 → Xray 版本** 中切换到没有
+  此限制的内核（例如 `v26.6.27`），版本列表会标出每个内核的 REALITY 限制。v26.7.11–v26.9.7
+  则需要在 REALITY 入站中显式填写 **最低客户端版本**（如 `1.0`）。
+- **ping（ICMP）不通不代表节点不可用**：很多云防火墙（AWS 安全组默认）丢弃 ICMP。请在客户端使用
+  TCP 或 URL 延迟测试。
 
 ## 从 3x-ui 迁移
 
