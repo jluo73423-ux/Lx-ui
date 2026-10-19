@@ -129,6 +129,20 @@ func stageXrayFromZip(zipPath, zipName, dir string) (string, error) {
 // validateXrayBinary runs the staged binary's version and config test.
 // configJSON may be nil to skip the config test.
 func validateXrayBinary(ctx context.Context, bin, wantVersion string, configJSON []byte) error {
+	// The default bin folder is the relative "bin" (resolved against the
+	// service's WorkingDirectory). The config test below runs with cmd.Dir set
+	// to that folder, so every path handed to it must be absolute; otherwise
+	// "bin/.xray-new-*" is looked up as bin/bin/.xray-new-* and the update
+	// fails with "fork/exec ...: no such file or directory".
+	absBin, err := filepath.Abs(bin)
+	if err != nil {
+		return err
+	}
+	bin = absBin
+	assetDir, err := filepath.Abs(config.GetBinFolderPath())
+	if err != nil {
+		return err
+	}
 	vctx, cancel := context.WithTimeout(ctx, xrayValidateTimeout)
 	defer cancel()
 	out, err := exec.CommandContext(vctx, bin, "version").CombinedOutput()
@@ -168,7 +182,7 @@ func validateXrayBinary(ctx context.Context, bin, wantVersion string, configJSON
 	// Asset lookups (geoip/geosite) resolve against the bin folder, like the
 	// real process started by the panel.
 	cmd.Dir = filepath.Dir(bin)
-	cmd.Env = append(os.Environ(), "XRAY_LOCATION_ASSET="+config.GetBinFolderPath())
+	cmd.Env = append(os.Environ(), "XRAY_LOCATION_ASSET="+assetDir)
 	if out, err := cmd.CombinedOutput(); err != nil {
 		return fmt.Errorf("config test failed: %w: %s", err, trimOutput(out))
 	}

@@ -243,3 +243,33 @@ func TestValidateRealXrayBinary(t *testing.T) {
 		t.Fatal("broken config not detected on the real binary")
 	}
 }
+
+// Real installs run with the default relative bin folder ("bin", resolved
+// against WorkingDirectory=/usr/local/lx-ui). The config test used to run the
+// staged "bin/.xray-new-*" with cmd.Dir=bin, i.e. bin/bin/.xray-new-*, and
+// every panel Xray update failed with "fork/exec ...: no such file or
+// directory" (seen on a live install).
+func TestInstallXrayArchiveWithRelativeBinFolder(t *testing.T) {
+	h := newUpdateHarness(t, "")
+	work := t.TempDir()
+	t.Chdir(work)
+	if err := os.MkdirAll("bin", 0o755); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("XUI_BIN_FOLDER", "bin")
+	h.target = xray.GetBinaryPath()
+	if filepath.IsAbs(h.target) {
+		t.Fatalf("precondition: target %q should be relative", h.target)
+	}
+	if err := os.WriteFile(h.target, []byte("OLD"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	script := fakeXrayScript("26.10.10", 0, "Configuration OK.")
+	if err := (&ServerService{}).installXrayArchive(writeXrayZip(t, script), "v26.10.10"); err != nil {
+		t.Fatalf("install with relative bin folder: %v", err)
+	}
+	if got := h.installed(t); got != script {
+		t.Fatalf("new binary not installed: %q", got)
+	}
+	assertNoStagedLeftovers(t, filepath.Join(work, "bin"))
+}
