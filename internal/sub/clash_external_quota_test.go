@@ -21,8 +21,10 @@ import (
 
 // But Mihomo (Clash.Meta) natively supports simple-obfs out of the box.
 // Use an unrepresentable network (kcp for shadowsocks) to verify
-const clashDroppedExternalLink = "ss://YWVzLTI1Ni1nY206Y2xpZW50cHc@198.51.100.9:8443?type=kcp#unsupported"
-const tcpObfsStream = `{"network":"kcp","security":"none"}`
+const (
+	clashDroppedExternalLink = "ss://YWVzLTI1Ni1nY206Y2xpZW50cHc@198.51.100.9:8443?type=kcp#unsupported"
+	tcpObfsStream            = `{"network":"kcp","security":"none"}`
+)
 
 func clashSubRouter(t *testing.T) *gin.Engine {
 	t.Helper()

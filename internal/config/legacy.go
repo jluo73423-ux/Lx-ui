@@ -112,8 +112,10 @@ func (m legacyMigrator) run() (LegacyMigrationResult, error) {
 		if err != nil {
 			return none, err
 		}
-		return LegacyMigrationResult{Action: "renamed-in-place", From: m.newDir, To: m.newDir, Files: files,
-			Note: fmt.Sprintf("copied %s.db to %s.db in %s; the original is kept", legacyAppName, m.newName, m.newDir)}, nil
+		return LegacyMigrationResult{
+			Action: "renamed-in-place", From: m.newDir, To: m.newDir, Files: files,
+			Note: fmt.Sprintf("copied %s.db to %s.db in %s; the original is kept", legacyAppName, m.newName, m.newDir),
+		}, nil
 	}
 
 	// 2. whole legacy folder.
@@ -131,9 +133,11 @@ func (m legacyMigrator) run() (LegacyMigrationResult, error) {
 		if err != nil {
 			return none, err
 		}
-		return LegacyMigrationResult{Action: "use-legacy-folder", From: m.legacyDir, To: m.legacyDir, Files: files,
+		return LegacyMigrationResult{
+			Action: "use-legacy-folder", From: m.legacyDir, To: m.legacyDir, Files: files,
 			Note: fmt.Sprintf("using the legacy data folder %s in place; change the volume mount to %s (or set LXUI_DB_FOLDER=%s)",
-				m.legacyDir, m.newDir, m.legacyDir)}, nil
+				m.legacyDir, m.newDir, m.legacyDir),
+		}, nil
 	}
 	if m.serviceUp != nil && m.serviceUp() {
 		return none, ErrLegacyServiceRunning
@@ -146,8 +150,10 @@ func (m legacyMigrator) run() (LegacyMigrationResult, error) {
 	if err := os.WriteFile(filepath.Join(m.newDir, LegacyMigrationMarker), []byte(marker), 0o600); err != nil {
 		return none, err
 	}
-	return LegacyMigrationResult{Action: "copied", From: m.legacyDir, To: m.newDir, Files: files,
-		Note: fmt.Sprintf("copied 3x-ui data from %s to %s; %s is kept for rollback", m.legacyDir, m.newDir, m.legacyDir)}, nil
+	return LegacyMigrationResult{
+		Action: "copied", From: m.legacyDir, To: m.newDir, Files: files,
+		Note: fmt.Sprintf("copied 3x-ui data from %s to %s; %s is kept for rollback", m.legacyDir, m.newDir, m.legacyDir),
+	}, nil
 }
 
 // legacyServiceActive reports whether systemd currently runs x-ui.service.

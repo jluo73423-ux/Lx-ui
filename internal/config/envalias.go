@@ -12,9 +12,9 @@ import (
 // the XUI_* names: ApplyEnvAliases copies every LXUI_<X> onto XUI_<X>, and an
 // LXUI_ value always wins over the XUI_ alias of the same name.
 
-// envAliasesApplied runs the alias pass during package initialisation, before
+// The blank var below runs the alias pass during package initialisation, before
 // any init() function and before any package that imports config reads XUI_*.
-var envAliasesApplied = ApplyEnvAliases()
+var _ = ApplyEnvAliases()
 
 // envNotAliased are LXUI_* variables that have no XUI_ counterpart.
 var envNotAliased = map[string]bool{"LXUI_REPO": true}

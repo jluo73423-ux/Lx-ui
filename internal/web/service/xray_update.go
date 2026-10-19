@@ -256,10 +256,10 @@ func (s *ServerService) installXrayArchive(zipPath, version string) error {
 	if startErr := xrayUpdateStart(s); startErr != nil {
 		logger.Errorf("xray update: %s did not start, rolling back: %v", version, startErr)
 		if rbErr := restoreXrayBinary(target, backup); rbErr != nil {
-			return fmt.Errorf("xray %s failed to start (%v) and rollback failed: %w", version, startErr, rbErr)
+			return fmt.Errorf("xray %s failed to start (%w) and rollback failed: %w", version, startErr, rbErr)
 		}
 		if again := xrayUpdateStart(s); again != nil {
-			return fmt.Errorf("xray %s failed to start (%v); rolled back the binary but the previous version did not start either: %w", version, startErr, again)
+			return fmt.Errorf("xray %s failed to start (%w); rolled back the binary but the previous version did not start either: %w", version, startErr, again)
 		}
 		return fmt.Errorf("xray %s failed to start and was rolled back to the previous version: %w%s", version, startErr, sandboxHint(startErr))
 	}

@@ -43,8 +43,10 @@ func TestUpdateTuicInboundResyncsWhenAClientIsAdded(t *testing.T) {
 	local := NewLocal(LocalDeps{SetNeedRestart: func() { resyncs++ }})
 	const id = 940003
 	tuic.RecordRelayAccounts(id, []string{"a@example.test"})
-	oldInbound := &model.Inbound{Id: id, Tag: "tuic-acc", Protocol: model.TUIC, Enable: true,
-		Settings: `{"clients":[{"email":"a@example.test"}]}`}
+	oldInbound := &model.Inbound{
+		Id: id, Tag: "tuic-acc", Protocol: model.TUIC, Enable: true,
+		Settings: `{"clients":[{"email":"a@example.test"}]}`,
+	}
 	newInbound := *oldInbound
 	newInbound.Settings = `{"clients":[{"email":"a@example.test"},{"email":"b@example.test"}]}`
 	if err := local.updateTuicInbound(context.Background(), oldInbound, &newInbound); err != nil {
@@ -60,8 +62,10 @@ func TestUpdateTuicInboundDoesNotResyncWhenAccountsAreCovered(t *testing.T) {
 	local := NewLocal(LocalDeps{SetNeedRestart: func() { resyncs++ }})
 	const id = 940004
 	tuic.RecordRelayAccounts(id, []string{"a@example.test", "b@example.test"})
-	oldInbound := &model.Inbound{Id: id, Tag: "tuic-acc2", Protocol: model.TUIC, Enable: true,
-		Settings: `{"clients":[{"email":"a@example.test","enable":true},{"email":"b@example.test","enable":true}]}`}
+	oldInbound := &model.Inbound{
+		Id: id, Tag: "tuic-acc2", Protocol: model.TUIC, Enable: true,
+		Settings: `{"clients":[{"email":"a@example.test","enable":true},{"email":"b@example.test","enable":true}]}`,
+	}
 	newInbound := *oldInbound
 	// b disabled: the runtime payload drops it, the relay account stays.
 	newInbound.Settings = `{"clients":[{"email":"a@example.test","enable":true}]}`
