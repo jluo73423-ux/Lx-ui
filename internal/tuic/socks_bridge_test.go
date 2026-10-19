@@ -414,3 +414,29 @@ func TestSOCKSPortForInboundKeepsEverySlotInsideTheWindow(t *testing.T) {
 		t.Fatalf("expected 64001 for id 0, got %d", got)
 	}
 }
+
+func TestRelayAccountEmails(t *testing.T) {
+	got := RelayAccountEmails(`{"clients":[
+		{"email":"b@x","enable":true},{"email":"a@x","enable":false},
+		{"email":""},{"email":"b@x"}]}`)
+	if strings.Join(got, ",") != "a@x,b@x" {
+		t.Fatalf("RelayAccountEmails = %v, want [a@x b@x] (disabled kept, empty and duplicates dropped)", got)
+	}
+	if RelayAccountEmails("") != nil || RelayAccountEmails("{bad") != nil {
+		t.Fatal("empty or invalid settings must yield nil")
+	}
+}
+
+func TestRelayAccountsCover(t *testing.T) {
+	const id = 987654
+	if RelayAccountsCover(id, []string{"a@x"}) {
+		t.Fatal("unknown inbound must not count as covered")
+	}
+	RecordRelayAccounts(id, []string{"a@x", "b@x"})
+	if !RelayAccountsCover(id, []string{"a@x"}) {
+		t.Fatal("subset must be covered (removed clients may linger)")
+	}
+	if RelayAccountsCover(id, []string{"a@x", "c@x"}) {
+		t.Fatal("a new email must not be covered")
+	}
+}

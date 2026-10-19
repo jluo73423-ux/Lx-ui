@@ -11,6 +11,7 @@ import (
 	"io"
 	"net"
 	"net/netip"
+	"sort"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -556,6 +557,69 @@ func SocksPassword() string {
 		socksPassword = base64.RawURLEncoding.EncodeToString(b[:])
 	})
 	return socksPassword
+}
+
+// RelayAccountEmails returns the identities the inbound's loopback SOCKS5
+// relay must accept: the email of every client in the stored settings,
+// enabled or not, de-duplicated and sorted. Disabled clients are kept on
+// purpose: the TUIC server itself refuses them at authentication, and keeping
+// the account list stable across enable/disable flips means a quota or expiry
+// toggle never changes the generated Xray config (password-auth SOCKS inbounds
+// cannot be hot-swapped, see internal/xray/hot_diff.go).
+func RelayAccountEmails(settings string) []string {
+	var parsed struct {
+		Clients []struct {
+			Email string `json:"email"`
+		} `json:"clients"`
+	}
+	if settings == "" || json.Unmarshal([]byte(settings), &parsed) != nil {
+		return nil
+	}
+	seen := make(map[string]struct{}, len(parsed.Clients))
+	emails := make([]string, 0, len(parsed.Clients))
+	for _, c := range parsed.Clients {
+		if c.Email == "" || len(c.Email) > 255 {
+			continue
+		}
+		if _, dup := seen[c.Email]; dup {
+			continue
+		}
+		seen[c.Email] = struct{}{}
+		emails = append(emails, c.Email)
+	}
+	sort.Strings(emails)
+	return emails
+}
+
+// relayAccounts remembers, per inbound id, the account set last written into
+// the generated Xray config by injectTuicSocks.
+var relayAccounts sync.Map // int -> map[string]struct{}
+
+// RecordRelayAccounts stores the accounts generated for an inbound's relay.
+func RecordRelayAccounts(inboundID int, emails []string) {
+	set := make(map[string]struct{}, len(emails))
+	for _, e := range emails {
+		set[e] = struct{}{}
+	}
+	relayAccounts.Store(inboundID, set)
+}
+
+// RelayAccountsCover reports whether the relay accounts last generated for the
+// inbound include every given email. A removed client may linger in Xray until
+// the next config change without harm (the TUIC server no longer
+// authenticates it); a new or renamed one would be refused by the relay.
+func RelayAccountsCover(inboundID int, emails []string) bool {
+	v, ok := relayAccounts.Load(inboundID)
+	if !ok {
+		return len(emails) == 0
+	}
+	set := v.(map[string]struct{})
+	for _, e := range emails {
+		if _, ok := set[e]; !ok {
+			return false
+		}
+	}
+	return true
 }
 
 // SocksInboundSettings builds the JSON `settings` block for a stock Xray

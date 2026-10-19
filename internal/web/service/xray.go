@@ -813,6 +813,8 @@ func injectAmneziawgnetSocks(cfg *xray.Config, inbounds []*model.Inbound) {
 }
 
 const (
+	// tuicEgressSocksSettings is only used for a TUIC inbound without any
+	// client email (nobody can authenticate to it anyway).
 	tuicEgressSocksSettings = `{"auth":"noauth","udp":true}`
 	// TUIC clients can connect to an IP while TLS carries a different or unresolvable SNI.
 	// Keep sniffed domains available for routing without replacing the requested destination.
@@ -834,12 +836,30 @@ func injectTuicSocks(cfg *xray.Config, inbounds []*model.Inbound) {
 			continue
 		}
 
+		// One username/password account per client email, the same scheme as
+		// the AmneziaWG relay: the in-process TUIC relay already authenticates
+		// as the client's email (socks5Handshake), so Xray attributes every
+		// relayed connection to that user and "user" routing rules match
+		// (#6874). With noauth Xray never learned the user and only
+		// inboundTag rules could match.
+		settings := json_util.RawMessage(tuicEgressSocksSettings)
+		emails := tuic.RelayAccountEmails(inbound.Settings)
+		if len(emails) > 0 {
+			built, err := tuic.SocksInboundSettings(emails, tuic.SocksPassword())
+			if err != nil {
+				logger.Warning("tuic socks: building settings for inbound [", inbound.Tag, "]: ", err)
+				continue
+			}
+			settings = json_util.RawMessage(built)
+		}
+		tuic.RecordRelayAccounts(inbound.Id, emails)
+
 		existingTags[inbound.Tag] = struct{}{}
 		cfg.InboundConfigs = append(cfg.InboundConfigs, xray.InboundConfig{
 			Listen:   json_util.RawMessage(`"127.0.0.1"`),
 			Port:     tuic.SOCKSPortForInbound(inbound.Id),
 			Protocol: "socks",
-			Settings: json_util.RawMessage(tuicEgressSocksSettings),
+			Settings: settings,
 			Sniffing: json_util.RawMessage(tuicEgressSniffingSettings),
 			Tag:      inbound.Tag,
 		})

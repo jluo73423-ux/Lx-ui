@@ -67,14 +67,60 @@ func TestInjectTuicSocks(t *testing.T) {
 	}
 
 	var parsedSettings struct {
-		Auth string `json:"auth"`
-		UDP  bool   `json:"udp"`
+		Auth     string `json:"auth"`
+		UDP      bool   `json:"udp"`
+		Accounts []struct {
+			User string `json:"user"`
+			Pass string `json:"pass"`
+		} `json:"accounts"`
 	}
 	if err := json.Unmarshal(sc.Settings, &parsedSettings); err != nil {
 		t.Fatalf("failed to unmarshal settings: %v", err)
 	}
-	if parsedSettings.Auth != "noauth" || !parsedSettings.UDP {
-		t.Fatalf("expected auth=noauth, udp=true, got %+v", parsedSettings)
+	// #6874: one account per client email so Xray "user" routing rules match.
+	if parsedSettings.Auth != "password" || !parsedSettings.UDP {
+		t.Fatalf("expected auth=password, udp=true, got %+v", parsedSettings)
+	}
+	if len(parsedSettings.Accounts) != 1 || parsedSettings.Accounts[0].User != "user1@example.com" ||
+		parsedSettings.Accounts[0].Pass != tuic.SocksPassword() {
+		t.Fatalf("accounts = %+v, want user1@example.com with the relay password", parsedSettings.Accounts)
+	}
+	if !tuic.RelayAccountsCover(5, []string{"user1@example.com"}) {
+		t.Fatal("generated accounts were not recorded for the runtime resync check")
+	}
+}
+
+func TestInjectTuicSocksKeepsDisabledClientsAndFallsBackWithoutEmails(t *testing.T) {
+	cfg := &xray.Config{}
+	inbounds := []*model.Inbound{
+		{Id: 6, Tag: "tuic-6", Protocol: model.TUIC, Enable: true, Settings: `{"clients":[
+			{"uuid":"a0000000-0000-0000-0000-000000000002","password":"p","email":"on@example.com","enable":true},
+			{"uuid":"a0000000-0000-0000-0000-000000000003","password":"p","email":"off@example.com","enable":false}]}`},
+		{Id: 7, Tag: "tuic-7", Protocol: model.TUIC, Enable: true, Settings: `{"clients":[]}`},
+	}
+	injectTuicSocks(cfg, inbounds)
+	if len(cfg.InboundConfigs) != 2 {
+		t.Fatalf("expected 2 relay inbounds, got %d", len(cfg.InboundConfigs))
+	}
+	var withClients struct {
+		Accounts []struct {
+			User string `json:"user"`
+		} `json:"accounts"`
+	}
+	if err := json.Unmarshal(cfg.InboundConfigs[0].Settings, &withClients); err != nil {
+		t.Fatal(err)
+	}
+	users := []string{}
+	for _, a := range withClients.Accounts {
+		users = append(users, a.User)
+	}
+	// Disabled clients keep their account so enable/disable flips do not
+	// change the config (password SOCKS inbounds cannot be hot-swapped).
+	if strings.Join(users, ",") != "off@example.com,on@example.com" {
+		t.Fatalf("accounts = %v", users)
+	}
+	if got := string(cfg.InboundConfigs[1].Settings); got != tuicEgressSocksSettings {
+		t.Fatalf("inbound without clients: settings = %s, want noauth fallback", got)
 	}
 }
 

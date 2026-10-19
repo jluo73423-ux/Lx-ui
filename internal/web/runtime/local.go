@@ -251,6 +251,13 @@ func (l *Local) updateTuicInbound(ctx context.Context, oldIb, newIb *model.Inbou
 	}
 	if oldIb.Protocol == model.TUIC && newIb.Protocol == model.TUIC && oldIb.Enable && newIb.Enable && oldIb.Tag != newIb.Tag && l.deps.SetNeedRestart != nil {
 		l.deps.SetNeedRestart()
+	} else if newIb.Protocol == model.TUIC && newIb.Enable && l.deps.SetNeedRestart != nil &&
+		!tuic.RelayAccountsCover(newIb.Id, tuic.RelayAccountEmails(newIb.Settings)) {
+		// The relay inbound in Xray carries one SOCKS account per client email
+		// (injectTuicSocks, #6874): a client added or renamed must reach
+		// Xray's config, or the relay would refuse that user. Profile edits
+		// and enable/disable flips do not change the account set.
+		l.deps.SetNeedRestart()
 	}
 	if !newIb.Enable {
 		tuic.GetManager().Remove(newIb.Id)
