@@ -3,6 +3,7 @@ package panel
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -41,7 +42,6 @@ type PanelUpdateInfo struct {
 }
 
 const (
-	panelUpdaterURL      = "https://raw.githubusercontent.com/<ORG>/Lx-ui/main/update.sh"
 	maxPanelUpdaterBytes = 2 << 20
 	// devReleaseTag is the fixed-tag rolling pre-release the CI force-moves to the
 	// newest main commit; the dev update channel installs from it.
@@ -249,6 +249,8 @@ func (s *PanelService) startUpdate(useDev bool) (int64, error) {
 	updateScript := fmt.Sprintf("set -e; trap 'rm -f %s' EXIT; %s %s", shellQuote(scriptPath), shellQuote(bash), shellQuote(scriptPath))
 	runIDEnv := "XUI_UPDATE_RUN_ID=" + strconv.FormatInt(runID, 10)
 	statusFileEnv := "XUI_UPDATE_STATUS_FILE=" + statusFile
+	// update.sh downloads from LXUI_REPO; pin it to the repo this binary uses.
+	repoEnv := "LXUI_REPO=" + config.GetReleaseRepo()
 	proxyEnv := updateProxyEnvVars()
 
 	if systemdRun, err := exec.LookPath("systemd-run"); err == nil {
@@ -260,6 +262,7 @@ func (s *PanelService) startUpdate(useDev bool) (int64, error) {
 			"--setenv", "XUI_UPDATE_TAG=" + updateTag,
 			"--setenv", runIDEnv,
 			"--setenv", statusFileEnv,
+			"--setenv", repoEnv,
 		}
 		for _, kv := range proxyEnv {
 			args = append(args, "--setenv", kv)
@@ -289,6 +292,7 @@ func (s *PanelService) startUpdate(useDev bool) (int64, error) {
 		"XUI_UPDATE_TAG="+updateTag,
 		runIDEnv,
 		statusFileEnv,
+		repoEnv,
 	)
 	setDetachedProcess(cmd)
 	if err := cmd.Start(); err != nil {
@@ -372,9 +376,22 @@ func releaseUpdateSlot() {
 	updateMu.Unlock()
 }
 
+// errReleaseRepoNotConfigured is returned while internal/config/repo still
+// holds the "<ORG>/Lx-ui" placeholder (see tools/rebrand.env).
+var errReleaseRepoNotConfigured = errors.New("self-update is unavailable: the Lx-ui release repository is not configured " +
+	"(set LXUI_REPO in tools/rebrand.env and rebuild, or set the LXUI_REPO environment variable)")
+
+// panelUpdaterURL is update.sh on the main branch of the release repository.
+func panelUpdaterURL() string {
+	return config.GetRawBaseURL() + "/main/update.sh"
+}
+
 func downloadPanelUpdater() (string, error) {
+	if !config.IsReleaseRepoConfigured() {
+		return "", errReleaseRepoNotConfigured
+	}
 	client := (&service.SettingService{}).NewProxiedHTTPClient(15 * time.Second)
-	req, reqErr := http.NewRequestWithContext(context.Background(), http.MethodGet, panelUpdaterURL, nil)
+	req, reqErr := http.NewRequestWithContext(context.Background(), http.MethodGet, panelUpdaterURL(), nil)
 	if reqErr != nil {
 		return "", fmt.Errorf("download panel updater: %w", reqErr)
 	}
@@ -431,9 +448,12 @@ func fetchLatestPanelVersion() (string, error) {
 // fetchPanelRelease fetches a release from GitHub. An empty tag resolves the
 // latest stable release; a non-empty tag (e.g. dev-latest) resolves that tag.
 func fetchPanelRelease(tag string) (*service.Release, error) {
-	url := "https://api.github.com/repos/<ORG>/Lx-ui/releases/latest"
+	if !config.IsReleaseRepoConfigured() {
+		return nil, errReleaseRepoNotConfigured
+	}
+	url := config.GetReleasesAPIURL() + "/latest"
 	if tag != "" {
-		url = "https://api.github.com/repos/<ORG>/Lx-ui/releases/tags/" + tag
+		url = config.GetReleasesAPIURL() + "/tags/" + tag
 	}
 	client := (&service.SettingService{}).NewProxiedHTTPClient(10 * time.Second)
 	req, reqErr := http.NewRequestWithContext(context.Background(), http.MethodGet, url, nil)

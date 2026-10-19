@@ -100,6 +100,8 @@ jobs:
           if [[ "$GITHUB_REF" != refs/tags/* ]]; then
             LDFLAGS="$LDFLAGS -X github.com/mhsanaei/3x-ui/v3/internal/config.buildCommit=${GITHUB_SHA::8} -X github.com/mhsanaei/3x-ui/v3/internal/config.buildDate=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
           fi
+          # Self-update follows the repository that built the release.
+          LDFLAGS="$LDFLAGS -X github.com/mhsanaei/3x-ui/v3/internal/config.releaseRepo=${GITHUB_REPOSITORY}"
           go build -buildvcs=true -ldflags "$LDFLAGS" -o xui-release -v .
           file xui-release
           ldd xui-release || echo "Static binary confirmed"
@@ -271,6 +273,8 @@ jobs:
           if [[ "$GITHUB_REF" != refs/tags/* ]]; then
             LDFLAGS="$LDFLAGS -X github.com/mhsanaei/3x-ui/v3/internal/config.buildCommit=${GITHUB_SHA:0:8} -X github.com/mhsanaei/3x-ui/v3/internal/config.buildDate=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
           fi
+          # Self-update follows the repository that built the release.
+          LDFLAGS="$LDFLAGS -X github.com/mhsanaei/3x-ui/v3/internal/config.releaseRepo=${GITHUB_REPOSITORY}"
           go build -buildvcs=true -ldflags "$LDFLAGS" -o xui-release.exe -v .
 
       - name: Copy and download resources
