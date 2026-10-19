@@ -1,6 +1,6 @@
 # 3x-ui — Architecture & Code Map
 
-> Navigation map for contributors and AI coding agents (referenced from `CLAUDE.md`).
+> Navigation map for contributors and AI coding agents.
 > Goal: jump to the right file in one hop instead of grepping the whole tree.
 > Tracks the `main` branch — paths reflect the latest changes, so verify against the live
 > tree rather than a pinned release (Go module `github.com/mhsanaei/3x-ui/v3`).
@@ -292,8 +292,7 @@ node heartbeat every 5s, periodic traffic resets (hourly/daily/weekly/monthly). 
 ├── x-ui.service.*  / x-ui.rc                               # systemd units (debian/rhel/arch) + rc script
 ├── windows_files/                                          # Windows service support
 └── .github/workflows/        # CI: ci.yml, codeql.yml, docker.yml, release.yml,
-                              #     mutation.yml, cleanup_caches.yml, claude-pr-review.yml,
-                              #     claude-issue-analyst.yml
+                              #     mutation.yml, cleanup_caches.yml
 ```
 
 ---
@@ -602,9 +601,7 @@ root → `go build ./...` / `go run main.go`.
 
 **CI** (`.github/workflows/`): `ci.yml` (build/test/lint), `codeql.yml` (security scan),
 `mutation.yml` (mutation testing), `docker.yml` + `release.yml`
-(multi-arch image + release builds), `cleanup_caches.yml`, `claude-pr-review.yml` (PR review
-only - it changes no code), `claude-issue-analyst.yml` (issue triage). A maintainer re-runs
-them with a comment starting `@claude review` on a PR or `@claude analyze` on an issue.
+(multi-arch image + release builds), `cleanup_caches.yml`.
 
 ---
 
