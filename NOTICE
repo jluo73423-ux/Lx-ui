@@ -1,0 +1,43 @@
+Lx-ui
+=====
+
+Lx-ui is a fork of 3x-ui (https://github.com/MHSanaei/3x-ui).
+
+  3x-ui      Copyright (C) the 3x-ui contributors (MHSanaei and others)
+  Lx-ui      Modifications Copyright (C) 2026 the Lx-ui contributors
+
+Both the original work and the modifications are licensed under the GNU
+General Public License, version 3 (GPL-3.0). The full license text is in the
+LICENSE file at the root of this repository. You may redistribute and/or
+modify this software under the terms of the GPL-3.0; it comes WITHOUT ANY
+WARRANTY, to the extent permitted by applicable law.
+
+Fork point
+----------
+Lx-ui was forked from 3x-ui at upstream commit
+a8d0700b ("fix(auth): add node-admin token scope for panel updates (#6666)"),
+which is 3x-ui v3.10.2 plus two follow-up commits. The complete upstream git
+history is preserved in this repository.
+
+Modification statement (GPL-3.0 section 5a)
+-------------------------------------------
+Lx-ui modifies the upstream work. The modifications, and the dates they were
+made, are recorded in:
+  * the git history of this repository (every change is a separate commit),
+  * docs/LX_CHANGES.md (human-readable summary of how Lx-ui differs),
+  * docs/UPSTREAM_SYNC.md (which upstream commits and pull requests were taken).
+
+"3x-ui" and "3X-UI" are the names of the upstream project and are used here
+only to describe the origin of this software. Lx-ui is not affiliated with or
+endorsed by the 3x-ui project.
+
+Third-party components
+----------------------
+Lx-ui embeds or downloads third-party software that keeps its own license,
+including (non-exhaustive):
+  * Xray-core (https://github.com/XTLS/Xray-core)            - MPL-2.0
+  * amneziawg-go (https://github.com/amnezia-vpn/amneziawg-go) - MIT
+  * mtg-multi (https://github.com/mhsanaei/mtg-multi)          - see upstream
+  * Go modules listed in go.mod and npm packages listed in
+    frontend/package.json, each under its own license.
+A complete report can be generated with `go-licenses report ./...`.
