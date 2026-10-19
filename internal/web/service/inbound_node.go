@@ -254,7 +254,7 @@ func (s *InboundService) mergeNodeClientTraffic(tx *gorm.DB, cs xray.ClientTraff
 			database.GreatestExpr("last_online", "?"),
 		),
 		deltaUp, deltaDown,
-		cs.Enable, cs.ExpiryTime, cs.Total, now, deltaUp, deltaDown,
+		cs.Enable, now, deltaUp, deltaDown, cs.Up+cs.Down,
 		cs.Total,
 		cs.ExpiryTime, cs.Reset, cs.ResetDay, cs.ResetWeekday,
 		cs.LastOnline, cs.Email,
@@ -285,18 +285,54 @@ func masterLimitsAllowClient(master *xray.ClientTraffic, now, deltaUp, deltaDown
 	return true
 }
 
-// nodeDisableIsStale reports an enable=false the node decided against limits the
-// master has since changed, so it must not latch back (#6228 / #4917).
+// nodeDisableIsStale reports an enable=false from a node that the master's own
+// accounting does not confirm, so it must not latch onto the master row.
+//
+// The master is the authority: it sums every node's usage (plus this tick's
+// deltas) and owns the deadline. A genuine node verdict (#4917: quota used up,
+// deadline passed) is therefore always confirmed by masterLimitsAllowClient.
+//
+// Lx-ui (#6870): upstream trusted the node unconditionally whenever the node's
+// limits matched the master's. A node can disable a client on inputs the
+// master no longer holds -- e.g. a client_global_traffics push computed before
+// a master-side reset/renewal that lands after it, or a disable written by a
+// lagging reconcile -- and with matching limits that stale verdict latched,
+// after which the master's lifecycle lifted it again and the client flipped
+// between enabled and disabled on every sync. Matching limits are no longer a
+// reason to skip the master's own check (#6228 still holds: limits the master
+// has since raised or extended are stale as before).
+//
+// A verdict also counts as confirmed when the node's own reported counters
+// reach the master's quota: the master may have attributed less than the node
+// saw (usage before the master's baseline existed), and that disable is
+// genuine. A node whose report shows usage below the quota and a deadline
+// still ahead has no evidence for its disable, so it does not latch.
 func nodeDisableIsStale(master *xray.ClientTraffic, node xray.ClientTraffic, now, deltaUp, deltaDown int64) bool {
 	if master == nil {
 		return false
 	}
-	// Matching limits mean the node judged the client on the master's own terms:
-	// that verdict is genuine and still latches, as #4917 requires.
-	if node.ExpiryTime == master.ExpiryTime && node.Total == master.Total {
+	if master.Total > 0 && node.Up+node.Down >= master.Total {
 		return false
 	}
 	return masterLimitsAllowClient(master, now, deltaUp, deltaDown)
+}
+
+// unconfirmedNodeDisables remembers (node, email) pairs whose enable=false was
+// refused by nodeDisableIsStale, so the refusal is logged once per episode
+// instead of on every sync tick (#6870 diagnostics).
+var unconfirmedNodeDisables sync.Map
+
+func noteUnconfirmedNodeDisable(nodeID int, master *xray.ClientTraffic, node xray.ClientTraffic) {
+	key := fmt.Sprintf("%d\x00%s", nodeID, node.Email)
+	if node.Enable || master == nil || !master.Enable {
+		unconfirmedNodeDisables.Delete(key)
+		return
+	}
+	if _, seen := unconfirmedNodeDisables.LoadOrStore(key, struct{}{}); seen {
+		return
+	}
+	logger.Infof("node %d reports client %q disabled, but the master's accounting (used %d of %d, expiry %d) and the node's counters (used %d) do not confirm it; keeping it enabled and re-pushing (#6870)",
+		nodeID, node.Email, master.Up+master.Down, master.Total, master.ExpiryTime, node.Up+node.Down)
 }
 
 func clampTrafficCounter(v int64) int64 {
@@ -1177,6 +1213,8 @@ func (s *InboundService) setRemoteTrafficLocked(nodeID int, snap *runtime.Traffi
 				if !clientFrozen {
 					if !cs.Enable && !nodeDisableIsStale(row, cs, now, deltaUp, deltaDown) {
 						next.Enable = false
+					} else {
+						noteUnconfirmedNodeDisable(nodeID, row, cs)
 					}
 					next.ExpiryTime = mergeActivationExpiry(row.ExpiryTime, cs.ExpiryTime)
 					next.Total = cs.Total

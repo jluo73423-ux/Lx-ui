@@ -55,10 +55,22 @@ func TestNodeDisableIsStale(t *testing.T) {
 	}{
 		{name: "nil master", node: xray.ClientTraffic{ExpiryTime: earlyAbs}},
 		{
-			name:      "matching limits are a genuine verdict",
+			// #6870: matching limits alone no longer make the node's verdict
+			// genuine; the master's own counters allow the client.
+			name:      "matching limits but the master allows the client",
 			master:    &xray.ClientTraffic{ExpiryTime: lateAbs, Total: quota},
 			node:      xray.ClientTraffic{ExpiryTime: lateAbs, Total: quota},
-			wantStale: false,
+			wantStale: true,
+		},
+		{
+			name:   "matching limits and the master is over quota",
+			master: &xray.ClientTraffic{ExpiryTime: lateAbs, Total: quota, Up: 60, Down: 50},
+			node:   xray.ClientTraffic{ExpiryTime: lateAbs, Total: quota},
+		},
+		{
+			name:   "matching limits and the master is expired",
+			master: &xray.ClientTraffic{ExpiryTime: earlyAbs},
+			node:   xray.ClientTraffic{ExpiryTime: earlyAbs},
 		},
 		{
 			name:      "node still holds the pre-extension deadline",
@@ -953,7 +965,7 @@ func TestClientTrafficMergeSQLMatchesHelpers(t *testing.T) {
 					`UPDATE client_traffics SET enable = %s, expiry_time = %s WHERE email = ?`,
 					enableExpr, expiryExpr,
 				),
-				c.nodeEnable, c.nodeExpiry, c.nodeTotal, now, c.deltaUp, c.deltaDown,
+				c.nodeEnable, now, c.deltaUp, c.deltaDown, int64(0),
 				c.nodeExpiry,
 				rowEmail,
 			).Error; err != nil {
