@@ -46,7 +46,7 @@ EXCLUDE_EXACT = {
     "docs/LX_CHANGES.md", "docs/UPSTREAM_SYNC.md",
     "go.mod", "go.sum",
     "tools/rebrand.sh", "tools/rebrand.env", "tools/check-rebrand.sh",
-    "internal/config/legacy.go", "internal/config/legacy_test.go",
+    "internal/config/legacy.go", "internal/config/legacy_test.go", "legacy_migrate.go",
 }
 EXCLUDE_PREFIX = ("frontend/node_modules/", "internal/web/dist/", "media/")
 BINARY_EXT = {".png", ".jpg", ".jpeg", ".gif", ".ico", ".webp", ".woff", ".woff2",

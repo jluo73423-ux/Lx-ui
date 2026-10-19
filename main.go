@@ -566,15 +566,23 @@ func migrateDb() {
 // "lx-ui setting" hit the same database backend as the panel. godotenv.Load does
 // not override variables already in the environment, so it is a no-op for the
 // systemd-managed service.
+//
+// When no Lx-ui env file exists yet, the pre-rename file
+// (config.GetLegacyEnvFilePaths) is read instead, so a PostgreSQL DSN or other
+// settings keep working after the switch. LXUI_* variables are then mapped
+// onto XUI_*.
 func loadServiceEnvFile() {
-	for _, path := range config.GetEnvFilePaths() {
-		if _, err := os.Stat(path); err != nil {
-			continue
+	defer config.ApplyEnvAliases()
+	for _, paths := range [][]string{config.GetEnvFilePaths(), config.GetLegacyEnvFilePaths()} {
+		for _, path := range paths {
+			if _, err := os.Stat(path); err != nil {
+				continue
+			}
+			if err := godotenv.Load(path); err != nil {
+				log.Printf("warning: failed to load env file %s: %v", path, err)
+			}
+			return
 		}
-		if err := godotenv.Load(path); err != nil {
-			log.Printf("warning: failed to load env file %s: %v", path, err)
-		}
-		return
 	}
 }
 
@@ -582,6 +590,9 @@ func loadServiceEnvFile() {
 // It parses command-line arguments to run the web server, migrate database, or update settings.
 func main() {
 	loadServiceEnvFile()
+	if len(os.Args) < 2 || (os.Args[1] != "-v" && os.Args[1] != "--version" && os.Args[1] != "-h" && os.Args[1] != "--help") {
+		migrateLegacyInstall()
+	}
 
 	if len(os.Args) < 2 {
 		runWebServer()

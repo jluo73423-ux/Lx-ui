@@ -6,12 +6,8 @@ import (
 	"testing"
 )
 
-// copyFile is the workhorse invoked by init()'s Windows-only DB migration
-// (config.go:214), the branch guarded by the platform check on config.go:196.
-// The init() guard itself cannot be re-driven from an in-process test (init runs
-// once at package load, the OS check is a compile-time constant, and the old-DB
-// source path is hardcoded to a system location), so these tests pin down the
-// migration payload's contract instead.
+// copyFile is the workhorse of the legacy data migration (legacy.go);
+// these tests pin down its contract.
 
 func TestCopyFileCopiesContents(t *testing.T) {
 	dir := t.TempDir()
