@@ -84,8 +84,12 @@ build: build-fe ## Build the frontend then the Go binary
 build-storybook: ## Build the static Storybook (compile-checks all stories)
 	cd $(FRONTEND) && npm run build-storybook
 
+.PHONY: rebrand-check
+rebrand-check: ## Fail on stray upstream download/update URLs or an out-of-date rebrand
+	tools/check-rebrand.sh
+
 # The PR gate. Matches ci.yml: codegen freshness, both linters, the formatter,
 # typecheck, both test suites, a full build, and the Storybook compile-check.
 .PHONY: verify
-verify: gen-check lint format-check typecheck test build build-storybook ## Full local gate (mirrors CI)
+verify: gen-check rebrand-check lint format-check typecheck test build build-storybook ## Full local gate (mirrors CI)
 	@echo "verify: OK"

@@ -8,7 +8,7 @@ set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
 ALLOW_FILES='^(LICENSE|NOTICE|README\.md|README\.zh_CN\.md|docs/LX_CHANGES\.md|docs/UPSTREAM_SYNC\.md|tools/rebrand\.sh|tools/check-rebrand\.sh|tools/rebrand\.env|go\.mod|go\.sum)$'
-PATTERN='(raw\.githubusercontent\.com/mhsanaei/3x-ui|api\.github\.com/repos/mhsanaei/3x-ui|github\.com/mhsanaei/3x-ui/releases|ghcr\.io/mhsanaei/3x-ui|github\.com/mhsanaei/3x-ui(["'"'"' )/]|$))'
+PATTERN='(raw\.githubusercontent\.com/mhsanaei/3x-ui|api\.github\.com/repos/mhsanaei/3x-ui|github\.com/mhsanaei/3x-ui/releases|ghcr\.io/mhsanaei/3x-ui|github\.com/mhsanaei/3x-ui(\.git|/(tree|blob|archive|raw)/|["'"'"' )>]|$))'
 
 fail=0
 hits=$(git ls-files -z | grep -zvE "$ALLOW_FILES" | grep -zvE '^(frontend/node_modules|internal/web/dist|media)/' \
