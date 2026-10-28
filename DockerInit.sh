@@ -34,7 +34,7 @@ fi
 mkdir -p build/bin
 cd build/bin
 # Bundled Xray: keep in sync with xray.RecommendedXrayVersion (internal/xray/compat.go).
-XRAY_URL="https://github.com/XTLS/Xray-core/releases/download/v26.10.10/Xray-linux-${ARCH}.zip"
+XRAY_URL="https://github.com/XTLS/Xray-core/releases/download/v26.10.21/Xray-linux-${ARCH}.zip"
 curl -sfLRO "$XRAY_URL"
 curl -sfLRO "${XRAY_URL}.dgst"
 XRAY_SHA256=$(sed -n 's/^SHA2-256= *//p' "Xray-linux-${ARCH}.zip.dgst" | head -n 1)

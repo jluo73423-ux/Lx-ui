@@ -10,7 +10,10 @@ import (
 func TestTierOfXrayVersion(t *testing.T) {
 	cases := map[string]XrayVersionTier{
 		RecommendedXrayVersion: XrayTierRecommended,
-		"26.10.10":             XrayTierRecommended,
+		"26.10.21":             XrayTierRecommended,
+		"26.10.10":             XrayTierUnsupported, // withdrawn upstream
+		"v26.10.17":            XrayTierUnsupported, // withdrawn upstream
+		"v26.9.8":              XrayTierUnsupported, // withdrawn upstream
 		"v26.9.30":             XrayTierVerified,
 		"v26.6.27":             XrayTierVerified,
 		"v26.8.1":              XrayTierExperimental,
@@ -93,6 +96,7 @@ func TestRealityGateOf(t *testing.T) {
 		"v26.9.8":   RealityGateMLKEM,
 		"v26.9.30":  RealityGateMLKEM,
 		"v26.10.10": RealityGateMLKEM,
+		"v26.10.21": RealityGateMLKEM,
 		"nightly":   RealityGateNone,
 	}
 	for tag, want := range cases {

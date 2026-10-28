@@ -66,7 +66,7 @@ Docker image: `ghcr.io/jluo73423-ux/lx-ui` (data volume `/etc/lx-ui`).
 
 ## Troubleshooting: REALITY node online but no traffic
 
-- **Xray v26.9.8 and later** (including the bundled v26.10.10) silently reject
+- **Xray v26.9.8 and later** (including the bundled v26.10.21) silently reject
   REALITY clients whose TLS ClientHello has no `X25519MLKEM768` key share. The
   client "connects" (to the real target site), the panel may even show it,
   but nothing is proxied and Xray logs nothing. Affected: Shadowrocket,

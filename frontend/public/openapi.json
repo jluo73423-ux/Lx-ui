@@ -6505,7 +6505,7 @@
                 "example": {
                   "success": true,
                   "obj": [
-                    "v26.10.10",
+                    "v26.10.21",
                     "v26.9.30",
                     "v26.7.28"
                   ]
@@ -6544,7 +6544,7 @@
                   "success": true,
                   "obj": [
                     {
-                      "version": "v26.10.10",
+                      "version": "v26.10.21",
                       "tier": "recommended"
                     },
                     {

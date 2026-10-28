@@ -55,7 +55,7 @@ Docker 镜像：`ghcr.io/jluo73423-ux/lx-ui`（数据卷 `/etc/lx-ui`）。
 
 ## 常见问题：REALITY 节点显示在线但没有流量
 
-- **Xray v26.9.8 及以上**（包括随包的 v26.10.10）会静默拒绝 TLS ClientHello 中不带
+- **Xray v26.9.8 及以上**（包括随包的 v26.10.21）会静默拒绝 TLS ClientHello 中不带
   `X25519MLKEM768` 密钥交换的 REALITY 客户端：客户端看似“连上”（其实连到了伪装目标网站），
   但不代理任何流量，Xray 也不记录日志。受影响：小火箭 Shadowrocket、sing-box、直接导入
   `vless://` 链接的 Mihomo/Clash（Clash 订阅会自动加 `support-x25519mlkem768`），以及

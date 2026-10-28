@@ -24,7 +24,7 @@ on:
 # (internal/xray/compat.go) and DockerInit.sh; TestRecommendedXrayVersionMatchesPins
 # fails when they drift.
 env:
-  XRAY_VERSION: v26.10.10
+  XRAY_VERSION: v26.10.21
 
 jobs:
   build:

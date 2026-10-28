@@ -627,6 +627,18 @@ update_lx-ui() {
         rm ${xui_folder}/lx-ui.sh -f > /dev/null 2>&1
         echo -e "${green}Removing old mtg version...${plain}"
         rm ${xui_folder}/bin/mtg-linux-$(arch) -f > /dev/null 2>&1
+        # KEEP_XRAY=1 keeps the Xray core the operator picked in the panel
+        # (Xray Version); by default the update installs the bundled core.
+        kept_xray=""
+        if [[ "${KEEP_XRAY:-0}" == "1" ]]; then
+            for xb in ${xui_folder}/bin/xray-linux-$(arch) ${xui_folder}/bin/xray-linux-arm32; do
+                if [[ -s "$xb" ]]; then
+                    kept_xray="$(mktemp)" && cp -f "$xb" "$kept_xray" && kept_xray_name="$(basename "$xb")"
+                    echo -e "${yellow}KEEP_XRAY=1: keeping current Xray core ($kept_xray_name)${plain}"
+                    break
+                fi
+            done
+        fi
         echo -e "${green}Removing old xray version...${plain}"
         rm ${xui_folder}/bin/xray-linux-$(arch) -f > /dev/null 2>&1
         echo -e "${green}Removing old README and LICENSE file...${plain}"
@@ -664,6 +676,10 @@ update_lx-ui() {
         fi
     fi
 
+    if [[ -n "${kept_xray:-}" && -s "$kept_xray" ]]; then
+        cp -f "$kept_xray" "bin/${kept_xray_name}" && rm -f "$kept_xray"
+        chmod +x "bin/${kept_xray_name}" > /dev/null 2>&1
+    fi
     chmod +x lx-ui bin/xray-linux-$(arch) > /dev/null 2>&1
     if [[ -f bin/mtg-linux-arm ]]; then
         chmod +x bin/mtg-linux-arm > /dev/null 2>&1

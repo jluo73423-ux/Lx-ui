@@ -25,7 +25,7 @@ import (
 // Keep RecommendedXrayVersion in sync with .github/workflows/release.yml and
 // DockerInit.sh; TestRecommendedXrayVersionMatchesPins enforces that.
 const (
-	RecommendedXrayVersion = "v26.10.10"
+	RecommendedXrayVersion = "v26.10.21"
 	// MinXrayVersion is the oldest release the panel can drive at all.
 	MinXrayVersion = "v26.6.27"
 )
@@ -38,6 +38,10 @@ var VerifiedXrayVersions = []string{
 	"v26.7.11",
 	"v26.6.27",
 }
+
+// WithdrawnXrayVersions were pulled upstream (root-CA security issue, see the
+// v26.10.21 release notes); the panel refuses to install them.
+var WithdrawnXrayVersions = []string{"v26.9.8", "v26.10.10", "v26.10.17"}
 
 // XrayVersionTier names a version's place in the policy above.
 type XrayVersionTier string
@@ -108,6 +112,11 @@ func TierOfXrayVersion(tag string) XrayVersionTier {
 		return XrayTierUnsupported
 	}
 	t := normalizeTag(tag)
+	for _, v := range WithdrawnXrayVersions {
+		if t == v {
+			return XrayTierUnsupported
+		}
+	}
 	if t == RecommendedXrayVersion {
 		return XrayTierRecommended
 	}

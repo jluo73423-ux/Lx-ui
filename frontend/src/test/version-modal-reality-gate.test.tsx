@@ -11,7 +11,7 @@ describe('Xray version picker: REALITY client gates', () => {
       success: true,
       msg: '',
       obj: [
-        { version: 'v26.10.10', tier: 'recommended', realityGate: 'mlkem' },
+        { version: 'v26.10.21', tier: 'recommended', realityGate: 'mlkem' },
         { version: 'v26.7.28', tier: 'verified', realityGate: 'minver' },
         { version: 'v26.6.27', tier: 'verified', realityGate: 'none' },
       ],
@@ -19,7 +19,7 @@ describe('Xray version picker: REALITY client gates', () => {
     render(
       <VersionModal
         open
-        status={{ xray: { version: '26.10.10' } } as unknown as Status}
+        status={{ xray: { version: '26.10.21' } } as unknown as Status}
         onClose={vi.fn()}
         onBusy={vi.fn()}
       />,

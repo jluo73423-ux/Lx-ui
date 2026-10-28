@@ -204,13 +204,13 @@ func TestUpdateXrayRefusesExperimentalWithoutOptIn(t *testing.T) {
 }
 
 func TestBuildXrayVersionInfos(t *testing.T) {
-	fetched := []string{"v26.11.2", "v26.10.10", "v26.9.30", "v26.8.1"}
+	fetched := []string{"v26.11.2", "v26.10.21", "v26.10.10", "v26.9.30", "v26.8.1"}
 	infos := buildXrayVersionInfos(fetched, false)
 	var tags []string
 	for _, i := range infos {
 		tags = append(tags, i.Version+":"+string(i.Tier))
 	}
-	want := "v26.10.10:recommended v26.9.30:verified v26.7.28:verified v26.7.11:verified v26.6.27:verified"
+	want := "v26.10.21:recommended v26.9.30:verified v26.7.28:verified v26.7.11:verified v26.6.27:verified"
 	if got := strings.Join(tags, " "); got != want {
 		t.Fatalf("infos = %s\nwant    %s", got, want)
 	}
@@ -218,7 +218,7 @@ func TestBuildXrayVersionInfos(t *testing.T) {
 	for _, i := range infos {
 		gates[i.Version] = i.RealityGate
 	}
-	if gates["v26.10.10"] != xray.RealityGateMLKEM || gates["v26.7.28"] != xray.RealityGateMinVer || gates["v26.6.27"] != xray.RealityGateNone {
+	if gates["v26.10.21"] != xray.RealityGateMLKEM || gates["v26.7.28"] != xray.RealityGateMinVer || gates["v26.6.27"] != xray.RealityGateNone {
 		t.Fatalf("reality gates = %v", gates)
 	}
 	infos = buildXrayVersionInfos(fetched, true)
