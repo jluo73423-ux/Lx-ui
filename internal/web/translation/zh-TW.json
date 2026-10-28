@@ -302,7 +302,12 @@
       "accessBlocked": "BLOCKED",
       "accessProxy": "PROXY",
       "importKeepHostSettings": "保留本機設定",
-      "importKeepHostSettingsDesc": "保留本面板的監聽位址、連接埠、基礎路徑、憑證與節點身分，而不是使用上傳檔案中的值。"
+      "importKeepHostSettingsDesc": "保留本面板的監聽位址、連接埠、基礎路徑、憑證與節點身分，而不是使用上傳檔案中的值。",
+      "xraySwitchGateWarn": {
+        "mlkem": "此核心（Xray v26.9.8 及以上）要求用戶端支援 ML-KEM：只有新版 Xray-core 用戶端（v2rayN/v2rayNG，指紋 chrome）和開啟 support-x25519mlkem768 的 Mihomo 能連線；小火箭 Shadowrocket、舊版 Clash、sing-box 將無法使用（顯示在線但無流量）。相容所有用戶端的核心是 v26.6.27。確定仍要切換到 #version# 嗎？",
+        "minver": "此核心（v26.7.11–v26.9.7）預設拒絕未回報 Xray 版本的用戶端：小火箭、Clash/Mihomo、sing-box 將無法使用。相容所有用戶端的核心是 v26.6.27。確定仍要切換到 #version# 嗎？"
+      },
+      "xraySwitchAnyway": "仍然切換"
     },
     "inbounds": {
       "totalDownUp": "總上傳 / 下載",

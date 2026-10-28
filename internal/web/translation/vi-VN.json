@@ -302,7 +302,12 @@
       "accessBlocked": "BLOCKED",
       "accessProxy": "PROXY",
       "importKeepHostSettings": "Giữ cài đặt của máy này",
-      "importKeepHostSettingsDesc": "Giữ nguyên địa chỉ lắng nghe, cổng, đường dẫn cơ sở, chứng chỉ và danh tính node của bảng điều khiển này thay vì lấy chúng từ tệp đã tải lên."
+      "importKeepHostSettingsDesc": "Giữ nguyên địa chỉ lắng nghe, cổng, đường dẫn cơ sở, chứng chỉ và danh tính node của bảng điều khiển này thay vì lấy chúng từ tệp đã tải lên.",
+      "xraySwitchGateWarn": {
+        "mlkem": "Lõi này (Xray v26.9.8+) yêu cầu client hỗ trợ ML-KEM: chỉ client Xray-core mới (v2rayN/v2rayNG, fp chrome) và Mihomo bật support-x25519mlkem768 mới kết nối được. Shadowrocket, Clash cũ và sing-box sẽ KHÔNG hoạt động. Lõi tương thích mọi client là v26.6.27. Vẫn chuyển sang #version#?",
+        "minver": "Lõi này (v26.7.11–v26.9.7) mặc định từ chối client không báo phiên bản Xray: Shadowrocket, Clash/Mihomo và sing-box sẽ KHÔNG hoạt động. Lõi tương thích là v26.6.27. Vẫn chuyển sang #version#?"
+      },
+      "xraySwitchAnyway": "Vẫn chuyển"
     },
     "inbounds": {
       "totalDownUp": "Tổng tải lên/tải xuống",

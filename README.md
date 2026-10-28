@@ -64,9 +64,26 @@ Docker image: `ghcr.io/jluo73423-ux/lx-ui` (data volume `/etc/lx-ui`).
 | logs | `/var/log/x-ui` | `/var/log/lx-ui` |
 | env file | `/etc/default/x-ui` | `/etc/default/lx-ui` |
 
+## Bundled Xray core
+
+Lx-ui bundles **Xray v26.6.27**, the newest core that still accepts every
+REALITY client (Shadowrocket, Clash/Mihomo, sing-box, v2rayN…). Newer cores
+add client gates (see below); the panel warns and asks for confirmation before
+switching to one. `update.sh` keeps the core you chose (set `KEEP_XRAY=0` to
+take the bundled one).
+
+**Security caveat:** upstream withdrew v26.9.8/v26.10.10/v26.10.17 because they
+shipped root certificates whose CA keys were compromised; v26.10.21 is the fix.
+v26.6.27 predates that bundled root store and trusts the server OS CA store
+instead, so it does not carry those roots itself — but it also lacks the newer
+Go TLS root filtering. This only affects TLS certificate *verification of
+outbound* connections (e.g. a TLS/HTTPS upstream), not the REALITY server.
+Keep the OS CA bundle (`ca-certificates`) updated, or switch to v26.10.21 if all
+your clients support ML-KEM.
+
 ## Troubleshooting: REALITY node online but no traffic
 
-- **Xray v26.9.8 and later** (including the bundled v26.10.21) silently reject
+- **Xray v26.9.8 and later** (e.g. v26.10.21) silently reject
   REALITY clients whose TLS ClientHello has no `X25519MLKEM768` key share. The
   client "connects" (to the real target site), the panel may even show it,
   but nothing is proxied and Xray logs nothing. Affected: Shadowrocket,

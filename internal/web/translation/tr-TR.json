@@ -302,7 +302,12 @@
       "accessBlocked": "BLOCKED",
       "accessProxy": "PROXY",
       "importKeepHostSettings": "Bu makinenin ayarlarını koru",
-      "importKeepHostSettingsDesc": "Yüklenen dosyadan almak yerine bu panelin dinleme adreslerini, portlarını, temel yolunu, sertifikalarını ve düğüm kimliğini korur."
+      "importKeepHostSettingsDesc": "Yüklenen dosyadan almak yerine bu panelin dinleme adreslerini, portlarını, temel yolunu, sertifikalarını ve düğüm kimliğini korur.",
+      "xraySwitchGateWarn": {
+        "mlkem": "Bu çekirdek (Xray v26.9.8+) ML-KEM destekli istemciler gerektirir: yalnızca güncel Xray-core istemcileri (v2rayN/v2rayNG, fp chrome) ve support-x25519mlkem768 açık Mihomo bağlanabilir. Shadowrocket, eski Clash ve sing-box ÇALIŞMAZ. Tüm istemcilerle uyumlu çekirdek v26.6.27'dir. Yine de #version# sürümüne geçilsin mi?",
+        "minver": "Bu çekirdek (v26.7.11–v26.9.7) Xray sürümü bildirmeyen istemcileri varsayılan olarak reddeder: Shadowrocket, Clash/Mihomo ve sing-box ÇALIŞMAZ. Uyumlu çekirdek v26.6.27'dir. Yine de #version# sürümüne geçilsin mi?"
+      },
+      "xraySwitchAnyway": "Yine de geç"
     },
     "inbounds": {
       "totalDownUp": "Toplam Gönderilen/Alınan",

@@ -53,9 +53,15 @@ Docker 镜像：`ghcr.io/jluo73423-ux/lx-ui`（数据卷 `/etc/lx-ui`）。
 | 日志 | `/var/log/x-ui` | `/var/log/lx-ui` |
 | 环境变量文件 | `/etc/default/x-ui` | `/etc/default/lx-ui` |
 
+## 随包 Xray 内核
+
+Lx-ui 随包 **Xray v26.6.27**——仍兼容所有 REALITY 客户端（Shadowrocket、Clash/Mihomo、sing-box、v2rayN 等）的最新内核。更新的内核带客户端门槛（见下文），面板切换到这类内核前会警告并要求确认。`update.sh` 默认保留你选择的内核（设 `KEEP_XRAY=0` 改用随包内核）。
+
+**安全提示：**上游撤回了 v26.9.8/v26.10.10/v26.10.17，因为它们内置了 CA 私钥已泄露的根证书；v26.10.21 是修复版。v26.6.27 早于内置根证书库，使用服务器系统 CA 库，自身不含那些根证书，但也没有新版 Go 的根证书过滤。这只影响**出站** TLS 连接的证书校验（如 TLS/HTTPS 上游），不影响 REALITY 服务端。请保持系统 `ca-certificates` 更新；若所有客户端都支持 ML-KEM，可切换到 v26.10.21。
+
 ## 常见问题：REALITY 节点显示在线但没有流量
 
-- **Xray v26.9.8 及以上**（包括随包的 v26.10.21）会静默拒绝 TLS ClientHello 中不带
+- **Xray v26.9.8 及以上**（如 v26.10.21）会静默拒绝 TLS ClientHello 中不带
   `X25519MLKEM768` 密钥交换的 REALITY 客户端：客户端看似“连上”（其实连到了伪装目标网站），
   但不代理任何流量，Xray 也不记录日志。受影响：小火箭 Shadowrocket、sing-box、直接导入
   `vless://` 链接的 Mihomo/Clash（Clash 订阅会自动加 `support-x25519mlkem768`），以及

@@ -302,7 +302,12 @@
       "accessBlocked": "ЗАБЛОКОВАНО",
       "accessProxy": "ЧЕРЕЗ ПРОКСІ",
       "importKeepHostSettings": "Зберегти налаштування цієї машини",
-      "importKeepHostSettingsDesc": "Залишає адреси та порти цієї панелі, базовий шлях, сертифікати та посвідчення для вузлів замість тих, що у завантаженому файлі."
+      "importKeepHostSettingsDesc": "Залишає адреси та порти цієї панелі, базовий шлях, сертифікати та посвідчення для вузлів замість тих, що у завантаженому файлі.",
+      "xraySwitchGateWarn": {
+        "mlkem": "Це ядро (Xray v26.9.8+) потребує клієнтів з ML-KEM: підключаться лише актуальні клієнти Xray-core (v2rayN/v2rayNG, fp chrome) і Mihomo з support-x25519mlkem768. Shadowrocket, старий Clash і sing-box НЕ працюватимуть. Сумісне ядро — v26.6.27. Все одно перемкнути на #version#?",
+        "minver": "Це ядро (v26.7.11–v26.9.7) типово відхиляє клієнтів без версії Xray: Shadowrocket, Clash/Mihomo і sing-box НЕ працюватимуть. Сумісне ядро — v26.6.27. Все одно перемкнути на #version#?"
+      },
+      "xraySwitchAnyway": "Все одно перемкнути"
     },
     "inbounds": {
       "totalDownUp": "Всього надісланих/отриманих",

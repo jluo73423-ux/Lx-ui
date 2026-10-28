@@ -553,7 +553,7 @@ export const sections: readonly Section[] = [
         summary:
           'Same list as getXrayVersion, with each version tagged recommended, verified or experimental.',
         response:
-          '{\n  "success": true,\n  "obj": [{ "version": "v26.10.21", "tier": "recommended" }, { "version": "v26.9.30", "tier": "verified" }]\n}',
+          '{\n  "success": true,\n  "obj": [{ "version": "v26.10.21", "tier": "verified" }, { "version": "v26.9.30", "tier": "verified" }]\n}',
       },
       {
         method: 'GET',

@@ -302,7 +302,12 @@
       "accessBlocked": "BLOCKED",
       "accessProxy": "PROXY",
       "importKeepHostSettings": "このマシンの設定を保持する",
-      "importKeepHostSettingsDesc": "アップロードしたファイルの値ではなく、このパネルのリッスンアドレス、ポート、ベースパス、証明書、ノード ID を保持します。"
+      "importKeepHostSettingsDesc": "アップロードしたファイルの値ではなく、このパネルのリッスンアドレス、ポート、ベースパス、証明書、ノード ID を保持します。",
+      "xraySwitchGateWarn": {
+        "mlkem": "このコア（Xray v26.9.8 以降）は ML-KEM 対応クライアントが必要です。接続できるのは最新の Xray-core クライアント（v2rayN/v2rayNG、fp chrome）と support-x25519mlkem768 を有効にした Mihomo のみで、Shadowrocket・旧 Clash・sing-box は使えません。全クライアント互換のコアは v26.6.27 です。それでも #version# に切り替えますか？",
+        "minver": "このコア（v26.7.11–v26.9.7）は Xray バージョンを送らないクライアントを既定で拒否します。Shadowrocket・Clash/Mihomo・sing-box は使えません。互換コアは v26.6.27 です。それでも #version# に切り替えますか？"
+      },
+      "xraySwitchAnyway": "それでも切り替える"
     },
     "inbounds": {
       "totalDownUp": "総アップロード / ダウンロード",

@@ -302,7 +302,12 @@
       "accessBlocked": "BLOCKED",
       "accessProxy": "PROXY",
       "importKeepHostSettings": "حفظ تنظیمات این دستگاه",
-      "importKeepHostSettingsDesc": "آدرس‌ها و پورت‌های شنود، مسیر پایه، گواهی‌ها و هویت نودِ همین پنل را نگه می‌دارد و آن‌ها را از فایل بارگذاری‌شده نمی‌گیرد."
+      "importKeepHostSettingsDesc": "آدرس‌ها و پورت‌های شنود، مسیر پایه، گواهی‌ها و هویت نودِ همین پنل را نگه می‌دارد و آن‌ها را از فایل بارگذاری‌شده نمی‌گیرد.",
+      "xraySwitchGateWarn": {
+        "mlkem": "این هسته (Xray v26.9.8 به بالا) به کلاینت‌های دارای ML-KEM نیاز دارد: فقط کلاینت‌های جدید Xray-core (v2rayN/v2rayNG با fp chrome) و Mihomo با support-x25519mlkem768 وصل می‌شوند. Shadowrocket، Clash قدیمی و sing-box کار نمی‌کنند. هسته سازگار با همه کلاینت‌ها v26.6.27 است. باز هم به #version# تغییر می‌دهید؟",
+        "minver": "این هسته (v26.7.11 تا v26.9.7) به‌طور پیش‌فرض کلاینت‌هایی را که نسخه Xray اعلام نمی‌کنند رد می‌کند: Shadowrocket، Clash/Mihomo و sing-box کار نمی‌کنند. هسته سازگار v26.6.27 است. باز هم به #version# تغییر می‌دهید؟"
+      },
+      "xraySwitchAnyway": "باز هم تغییر بده"
     },
     "inbounds": {
       "totalDownUp": "دریافت/ارسال کل",

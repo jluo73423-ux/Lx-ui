@@ -210,7 +210,7 @@ func TestBuildXrayVersionInfos(t *testing.T) {
 	for _, i := range infos {
 		tags = append(tags, i.Version+":"+string(i.Tier))
 	}
-	want := "v26.10.21:recommended v26.9.30:verified v26.7.28:verified v26.7.11:verified v26.6.27:verified"
+	want := "v26.10.21:verified v26.9.30:verified v26.7.28:verified v26.7.11:verified v26.6.27:recommended"
 	if got := strings.Join(tags, " "); got != want {
 		t.Fatalf("infos = %s\nwant    %s", got, want)
 	}
@@ -225,7 +225,7 @@ func TestBuildXrayVersionInfos(t *testing.T) {
 	if infos[0].Version != "v26.11.2" || infos[0].Tier != xray.XrayTierExperimental {
 		t.Fatalf("with opt-in the newest experimental release must lead: %+v", infos[0])
 	}
-	if len(buildXrayVersionInfos(nil, false)) != 1+len(xray.VerifiedXrayVersions) {
+	if len(buildXrayVersionInfos(nil, false)) != len(xray.VerifiedXrayVersions) {
 		t.Fatal("pinned versions must be offered even without a GitHub list")
 	}
 }

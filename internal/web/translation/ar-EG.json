@@ -302,7 +302,12 @@
       "accessBlocked": "BLOCKED",
       "accessProxy": "PROXY",
       "importKeepHostSettings": "الاحتفاظ بإعدادات هذا الجهاز",
-      "importKeepHostSettingsDesc": "يحتفظ بعناوين الاستماع والمنافذ والمسار الأساسي والشهادات وهوية العقدة الخاصة بهذه اللوحة بدلًا من أخذها من الملف المرفوع."
+      "importKeepHostSettingsDesc": "يحتفظ بعناوين الاستماع والمنافذ والمسار الأساسي والشهادات وهوية العقدة الخاصة بهذه اللوحة بدلًا من أخذها من الملف المرفوع.",
+      "xraySwitchGateWarn": {
+        "mlkem": "هذه النواة (Xray v26.9.8 فما فوق) تتطلب عملاء يدعمون ML-KEM: يتصل فقط عملاء Xray-core الحديثون (v2rayN/v2rayNG مع fp chrome) و Mihomo مع support-x25519mlkem768. لن يعمل Shadowrocket و Clash القديم و sing-box. النواة المتوافقة مع جميع العملاء هي v26.6.27. هل تريد التبديل إلى #version# على أي حال؟",
+        "minver": "هذه النواة (v26.7.11–v26.9.7) ترفض افتراضيًا العملاء الذين لا يرسلون إصدار Xray: لن يعمل Shadowrocket و Clash/Mihomo و sing-box. النواة المتوافقة هي v26.6.27. هل تريد التبديل إلى #version# على أي حال؟"
+      },
+      "xraySwitchAnyway": "بدّل على أي حال"
     },
     "inbounds": {
       "totalDownUp": "إجمالي المرسل/المستقبل",

@@ -209,3 +209,20 @@ First stable release after 1.0.0. Summary of the fixes since 1.0.0:
   subscription (`support-x25519mlkem768: true`). sing-box 1.14 (all fps),
   Xray fp `ios`, and Mihomo without that field fall back to the target site:
   "connected" but no traffic.
+
+## 2026-10-28 — v1.0.3
+
+- **Bundled Xray core is now v26.6.27** (was v26.10.21). v26.6.27 is the
+  newest core without a REALITY client gate, so Shadowrocket, Clash/Mihomo
+  (with or without `support-x25519mlkem768`), sing-box and Xray clients all
+  work. v26.10.21 stays selectable in Overview → Xray version.
+- Switching to a gated core (≥ v26.9.8 ML-KEM only, v26.7.11–v26.9.7 min client
+  version) now shows a red warning that Shadowrocket/older Clash/sing-box will
+  stop working and requires "Switch anyway" (all 13 locales).
+- `update.sh` keeps the installed Xray core by default when it is a supported
+  release (v26.6.27, v26.7.11, v26.7.28, v26.9.30, v26.10.21); `KEEP_XRAY=0`
+  forces the bundled core, `KEEP_XRAY=1` keeps any core. Tested in Debian 12.
+- Security caveat: v26.6.27 predates the bundled root-CA store pulled in
+  v26.9.8–v26.10.17 (it uses the OS CA store) but lacks the Go 1.27.3 root
+  filtering of v26.10.21. Only outbound TLS verification is affected, not the
+  REALITY server; keep `ca-certificates` updated.

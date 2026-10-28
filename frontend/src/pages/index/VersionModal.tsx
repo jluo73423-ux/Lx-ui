@@ -73,11 +73,17 @@ export default function VersionModal({ open, status, onClose, onBusy }: VersionM
     if (open) void fetchVersions();
   }, [open, fetchVersions]);
 
-  function switchXrayVersion(version: string) {
+  function switchXrayVersion(version: string, realityGate?: RealityGate) {
+    // Gated cores lock out Shadowrocket / Clash / sing-box REALITY clients, so
+    // switching to one needs an explicit, warned confirmation.
+    const gated = realityGate === 'mlkem' || realityGate === 'minver';
     modal.confirm({
       title: t('pages.index.xraySwitchVersionDialog'),
-      content: t('pages.index.xraySwitchVersionDialogDesc').replace('#version#', version),
-      okText: t('confirm'),
+      content: gated
+        ? t(`pages.index.xraySwitchGateWarn.${realityGate}`).replace('#version#', version)
+        : t('pages.index.xraySwitchVersionDialogDesc').replace('#version#', version),
+      okButtonProps: gated ? { danger: true } : undefined,
+      okText: gated ? t('pages.index.xraySwitchAnyway') : t('confirm'),
       cancelText: t('cancel'),
       onOk: async () => {
         onClose();
@@ -155,7 +161,7 @@ export default function VersionModal({ open, status, onClose, onBusy }: VersionM
                         </span>
                         <Radio
                           checked={version === `v${status?.xray?.version}`}
-                          onClick={() => switchXrayVersion(version)}
+                          onClick={() => switchXrayVersion(version, realityGate)}
                         />
                       </div>
                     ))}

@@ -627,14 +627,21 @@ update_lx-ui() {
         rm ${xui_folder}/lx-ui.sh -f > /dev/null 2>&1
         echo -e "${green}Removing old mtg version...${plain}"
         rm ${xui_folder}/bin/mtg-linux-$(arch) -f > /dev/null 2>&1
-        # KEEP_XRAY=1 keeps the Xray core the operator picked in the panel
-        # (Xray Version); by default the update installs the bundled core.
+        # By default the update keeps the Xray core the operator picked in the
+        # panel (Xray Version) when it is a supported release; KEEP_XRAY=0
+        # forces the bundled core, KEEP_XRAY=1 keeps any installed core.
         kept_xray=""
-        if [[ "${KEEP_XRAY:-0}" == "1" ]]; then
+        supported_xray=" 26.10.21 26.9.30 26.7.28 26.7.11 26.6.27 "
+        if [[ "${KEEP_XRAY:-auto}" != "0" ]]; then
             for xb in ${xui_folder}/bin/xray-linux-$(arch) ${xui_folder}/bin/xray-linux-arm32; do
                 if [[ -s "$xb" ]]; then
-                    kept_xray="$(mktemp)" && cp -f "$xb" "$kept_xray" && kept_xray_name="$(basename "$xb")"
-                    echo -e "${yellow}KEEP_XRAY=1: keeping current Xray core ($kept_xray_name)${plain}"
+                    xv="$("$xb" version 2>/dev/null | awk 'NR==1{print $2}')"
+                    if [[ "${KEEP_XRAY:-auto}" == "1" || ( -n "$xv" && "$supported_xray" == *" $xv "* ) ]]; then
+                        kept_xray="$(mktemp)" && cp -f "$xb" "$kept_xray" && kept_xray_name="$(basename "$xb")"
+                        echo -e "${yellow}Keeping current Xray core ${xv:-?} ($kept_xray_name); set KEEP_XRAY=0 to use the bundled core${plain}"
+                    else
+                        echo -e "${yellow}Installed Xray core ${xv:-unknown} is not a supported release; installing the bundled core${plain}"
+                    fi
                     break
                 fi
             done

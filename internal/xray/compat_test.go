@@ -4,18 +4,20 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"testing"
 )
 
 func TestTierOfXrayVersion(t *testing.T) {
 	cases := map[string]XrayVersionTier{
 		RecommendedXrayVersion: XrayTierRecommended,
-		"26.10.21":             XrayTierRecommended,
+		"26.10.21":             XrayTierVerified,
+		"26.6.27":              XrayTierRecommended,
 		"26.10.10":             XrayTierUnsupported, // withdrawn upstream
 		"v26.10.17":            XrayTierUnsupported, // withdrawn upstream
 		"v26.9.8":              XrayTierUnsupported, // withdrawn upstream
 		"v26.9.30":             XrayTierVerified,
-		"v26.6.27":             XrayTierVerified,
+		"v26.7.11":             XrayTierVerified,
 		"v26.8.1":              XrayTierExperimental,
 		"v26.11.2":             XrayTierExperimental,
 		"v27.1.1":              XrayTierExperimental,
@@ -47,10 +49,13 @@ func TestXrayVersionAllowed(t *testing.T) {
 	}
 }
 
-func TestVerifiedVersionsAreOrderedAndBelowRecommended(t *testing.T) {
+// The recommended core is a verified pin chosen for client compatibility,
+// not necessarily the newest one (newer cores gate REALITY clients).
+func TestVerifiedVersionsAreOrderedAndContainRecommended(t *testing.T) {
+	found := false
 	for i, v := range VerifiedXrayVersions {
-		if CompareXrayVersions(v, RecommendedXrayVersion) >= 0 {
-			t.Errorf("verified %s is not older than recommended %s", v, RecommendedXrayVersion)
+		if v == RecommendedXrayVersion {
+			found = true
 		}
 		if CompareXrayVersions(v, MinXrayVersion) < 0 {
 			t.Errorf("verified %s is below the minimum %s", v, MinXrayVersion)
@@ -58,6 +63,9 @@ func TestVerifiedVersionsAreOrderedAndBelowRecommended(t *testing.T) {
 		if i > 0 && CompareXrayVersions(VerifiedXrayVersions[i-1], v) <= 0 {
 			t.Errorf("VerifiedXrayVersions not newest-first at %d", i)
 		}
+	}
+	if !found {
+		t.Errorf("recommended %s must be in VerifiedXrayVersions", RecommendedXrayVersion)
 	}
 }
 
@@ -103,5 +111,21 @@ func TestRealityGateOf(t *testing.T) {
 		if got := RealityGateOf(tag); got != want {
 			t.Errorf("RealityGateOf(%q) = %q, want %q", tag, got, want)
 		}
+	}
+}
+
+// update.sh keeps the operator's core only when it is a supported release; its
+// list must match the panel's.
+func TestUpdateScriptSupportedXrayListMatches(t *testing.T) {
+	b, err := os.ReadFile("../../update.sh")
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := " "
+	for _, v := range VerifiedXrayVersions {
+		want += strings.TrimPrefix(v, "v") + " "
+	}
+	if !strings.Contains(string(b), `supported_xray="`+want+`"`) {
+		t.Fatalf("update.sh supported_xray must be %q", want)
 	}
 }

@@ -25,7 +25,7 @@ import (
 // Keep RecommendedXrayVersion in sync with .github/workflows/release.yml and
 // DockerInit.sh; TestRecommendedXrayVersionMatchesPins enforces that.
 const (
-	RecommendedXrayVersion = "v26.10.21"
+	RecommendedXrayVersion = "v26.6.27"
 	// MinXrayVersion is the oldest release the panel can drive at all.
 	MinXrayVersion = "v26.6.27"
 )
@@ -33,6 +33,7 @@ const (
 // VerifiedXrayVersions lists, newest first, the release pins upstream shipped
 // since MinXrayVersion (from the history of release.yml).
 var VerifiedXrayVersions = []string{
+	"v26.10.21",
 	"v26.9.30",
 	"v26.7.28",
 	"v26.7.11",

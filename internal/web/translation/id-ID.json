@@ -302,7 +302,12 @@
       "accessBlocked": "BLOCKED",
       "accessProxy": "PROXY",
       "importKeepHostSettings": "Pertahankan pengaturan mesin ini",
-      "importKeepHostSettingsDesc": "Mempertahankan alamat dengar, port, path dasar, sertifikat, dan identitas node panel ini alih-alih mengambilnya dari berkas yang diunggah."
+      "importKeepHostSettingsDesc": "Mempertahankan alamat dengar, port, path dasar, sertifikat, dan identitas node panel ini alih-alih mengambilnya dari berkas yang diunggah.",
+      "xraySwitchGateWarn": {
+        "mlkem": "Core ini (Xray v26.9.8+) memerlukan klien yang mendukung ML-KEM: hanya klien Xray-core terbaru (v2rayN/v2rayNG, fp chrome) dan Mihomo dengan support-x25519mlkem768 yang bisa terhubung. Shadowrocket, Clash lama, dan sing-box TIDAK akan berfungsi. Core yang kompatibel dengan semua klien adalah v26.6.27. Tetap beralih ke #version#?",
+        "minver": "Core ini (v26.7.11–v26.9.7) secara default menolak klien yang tidak melaporkan versi Xray: Shadowrocket, Clash/Mihomo, dan sing-box TIDAK akan berfungsi. Core yang kompatibel adalah v26.6.27. Tetap beralih ke #version#?"
+      },
+      "xraySwitchAnyway": "Tetap beralih"
     },
     "inbounds": {
       "totalDownUp": "Total Terkirim/Diterima",
