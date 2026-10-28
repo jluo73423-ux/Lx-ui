@@ -226,3 +226,14 @@ First stable release after 1.0.0. Summary of the fixes since 1.0.0:
   v26.9.8–v26.10.17 (it uses the OS CA store) but lacks the Go 1.27.3 root
   filtering of v26.10.21. Only outbound TLS verification is affected, not the
   REALITY server; keep `ca-certificates` updated.
+
+## 2026-10-28 — v1.0.4
+
+- Security: Go toolchain bumped to 1.27.3 (`go.mod`), fixing GO-2026-6809 in
+  `crypto/x509` (reachable via the REALITY target scan's certificate check).
+- Security: frontend `npm audit fix` (non-breaking) — DOMPurify bumped to
+  3.4.17 (critical advisories via swagger-ui-react). The remaining low-severity
+  `deepmerge`/`swagger-client` advisory needs a breaking swagger-ui-react
+  downgrade and is left as is.
+- CI: docs Pages deploy is skipped unless the repo variable `PAGES_ENABLED=true`.
+- No functional change; bundled Xray stays v26.6.27.

@@ -68,6 +68,9 @@ jobs:
 
   deploy:
     needs: build
+    # Skipped (not failed) until Pages is enabled: set the repository variable
+    # PAGES_ENABLED=true after turning on Settings -> Pages -> GitHub Actions.
+    if: ${{ vars.PAGES_ENABLED == 'true' }}
     runs-on: ubuntu-latest
     environment:
       name: github-pages
