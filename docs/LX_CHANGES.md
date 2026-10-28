@@ -195,3 +195,17 @@ First stable release after 1.0.0. Summary of the fixes since 1.0.0:
   marked latest once every platform asset is uploaded, so `releases/latest`,
   `install.sh`, `update.sh` and the panel update check resolve the stable tag.
   `dev-latest` stays a prerelease that is never marked latest.
+
+## 2026-10-28 — v1.0.2
+
+- The bundled Xray core moves from v26.10.10 to v26.10.21. Upstream withdrew
+  v26.9.8, v26.10.10 and v26.10.17 (root-CA security issue); the panel now
+  marks those three as unsupported and will not install them.
+- `update.sh` accepts `KEEP_XRAY=1` to keep the Xray core picked in the panel
+  instead of replacing it with the bundled one.
+- Measured on a local server (VLESS + REALITY + Vision): v26.9.8 and later
+  only accept clients whose ClientHello carries X25519MLKEM768 — Xray/v2rayN
+  with fp chrome/firefox/safari, and Mihomo with the panel's Clash
+  subscription (`support-x25519mlkem768: true`). sing-box 1.14 (all fps),
+  Xray fp `ios`, and Mihomo without that field fall back to the target site:
+  "connected" but no traffic.

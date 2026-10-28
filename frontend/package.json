@@ -1,7 +1,7 @@
 {
   "name": "lx-ui-frontend",
   "private": true,
-  "version": "1.0.1",
+  "version": "1.0.2",
   "type": "module",
   "description": "lx-ui panel frontend (React 19 + Ant Design 6 + Vite 8).",
   "engines": {
